@@ -16,11 +16,18 @@ COMMON_CFLAGS=-Wimplicit-fallthrough=5 -Werror -fmerge-constants -ftracer
 if TARGET_X86_64
 COMMON_CFLAGS+=-mcmodel=small
 endif
+if TARGET_AARCH64
+COMMON_CFLAGS+=-mcmodel=small
+endif
 
 AM_CFLAGS=$(cflags_common) $(COMMON_CFLAGS)
 AM_CXXFLAGS=$(cxxflags_common) $(COMMON_CFLAGS) -fno-threadsafe-statics
 
 if TARGET_X86_64
+# Needed by mcountFunc.S to choose the right code path and symbol names
+AM_CCASFLAGS=-D_WIN64
+endif
+if TARGET_AARCH64
 # Needed by mcountFunc.S to choose the right code path and symbol names
 AM_CCASFLAGS=-D_WIN64
 endif
@@ -50,6 +57,20 @@ LIB_NAME=libcygwin.a
 
 # These objects are included directly into the import library
 if TARGET_X86_64
+TARGET_FILES= \
+	x86_64/bcopy.S \
+	x86_64/memchr.S \
+	x86_64/memcpy.S \
+	x86_64/memmove.S \
+	x86_64/mempcpy.S \
+	x86_64/memset.S \
+	x86_64/swab.S \
+	x86_64/wmemcpy.S \
+	x86_64/wmemmove.S \
+	x86_64/wmempcpy.S
+endif
+
+if TARGET_AARCH64
 TARGET_FILES= \
 	x86_64/bcopy.S \
 	x86_64/memchr.S \
@@ -360,6 +381,11 @@ DLL_FILES= \
 	winf.cc
 
 if TARGET_X86_64
+GMON_TARGET_FILES = \
+	x86_64/mcountFunc.S
+endif
+
+if TARGET_AARCH64
 GMON_TARGET_FILES = \
 	x86_64/mcountFunc.S
 endif
