@@ -869,7 +869,7 @@ case "${target}" in
   i[[3456789]]86-*-mingw*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
-  x86_64-*-mingw*)
+  aarch64-*-mingw* | x86_64-*-mingw*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   mmix-*-*)
@@ -1173,12 +1173,7 @@ case "${target}" in
     # No ld support yet.
     noconfigdirs="$noconfigdirs libgui itcl ld"
     ;;
-  i[[3456789]]86-w64-mingw*)
-    ;;
-  i[[3456789]]86-*-mingw*)
-    target_configdirs="$target_configdirs target-winsup"
-    ;;
-  *-*-cygwin*)
+  *-*-cygwin* | *-*-mingw*)
     target_configdirs="$target_configdirs target-libtermcap target-winsup"
     noconfigdirs="$noconfigdirs target-libgloss"
     # always build newlib if winsup directory is present.
@@ -3225,7 +3220,7 @@ case " $target_configdirs " in
 esac
 
 case "$target" in
-  x86_64-*mingw* | *-w64-mingw*)
+  aarch64-*mingw* | x86_64-*mingw* | *-w64-mingw*)
   # MinGW-w64 does not use newlib, nor does it use winsup. It may,
   # however, use a symlink named 'mingw' in ${prefix} .
     FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -L${prefix}/${target}/lib -L${prefix}/mingw/lib -isystem ${prefix}/${target}/include -isystem ${prefix}/mingw/include'
