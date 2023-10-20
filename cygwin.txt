@@ -1,0 +1,45 @@
+#define __INTMAX_C(c) c ## L
+#define __WINT_MAX__ 0xffffffffU
+#define __SIZE_MAX__ 0xffffffffffffffffUL
+#define __UINT_FAST64_MAX__ 0xffffffffffffffffUL
+#define __UINT_LEAST64_MAX__ 0xffffffffffffffffUL
+#define __UINTMAX_TYPE__ long unsigned int
+#define __unix 1
+#define __WINT_MIN__ 0U
+#define __INT64_C(c) c ## L
+#define __unix__ 1
+#define __SIZEOF_LONG__ 8
+#define __INT_FAST32_MAX__ 0x7fffffffffffffffL
+#define __INT_FAST16_TYPE__ long int
+#define __PTRDIFF_MAX__ 0x7fffffffffffffffL
+#define __SIZEOF_WINT_T__ 4
+#define __INT_FAST64_TYPE__ long int
+#define __SIZE_TYPE__ long unsigned int
+#define __LP64__ 1
+#define __UINT64_C(c) c ## UL
+#define __INT_FAST32_TYPE__ long int
+#define unix 1
+#define __UINT64_MAX__ 0xffffffffffffffffUL
+#define __UINTMAX_C(c) c ## UL
+#define __CYGWIN__ 1
+#define __INT_FAST16_MAX__ 0x7fffffffffffffffL
+#define __INTPTR_TYPE__ long int
+#define __UINTPTR_MAX__ 0xffffffffffffffffUL
+#define __INT_FAST64_MAX__ 0x7fffffffffffffffL
+#define __UINT_FAST64_TYPE__ long unsigned int
+#define __INT64_TYPE__ long int
+#define __INT_LEAST64_MAX__ 0x7fffffffffffffffL
+#define __WINT_TYPE__ unsigned int
+#define __WINT_WIDTH__ 32
+#define __SIZEOF_INT128__ 16
+#define _LP64 1
+#define __UINT64_TYPE__ long unsigned int
+#define __INTMAX_MAX__ 0x7fffffffffffffffL
+#define __LONG_WIDTH__ 64
+#define __UINT_FAST32_TYPE__ long unsigned int
+#define __INTMAX_TYPE__ long int
+#define __INT_FAST16_WIDTH__ 64
+#define __UINTMAX_MAX__ 0xffffffffffffffffUL
+#define __PTRDIFF_TYPE__ long int
+#define __UINTPTR_TYPE__ long unsigned int
+#define __UINT_FAST16_MAX__ 0xffffffffffffffffUL
