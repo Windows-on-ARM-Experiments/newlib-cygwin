@@ -21,12 +21,9 @@ int dlmalloc_trim (size_t);
 int dlmallopt (int p, int v);
 void dlmalloc_stats ();
 
-#define MALLOC_ALIGNMENT ((size_t)16U)
-
 #if defined (DLMALLOC_VERSION)	/* Building malloc.cc */
 
 extern "C" void __set_ENOMEM ();
-# define MALLOC_FAILURE_ACTION	__set_ENOMEM ()
 # define USE_DL_PREFIX 1
 
 #elif defined (__INSIDE_CYGWIN__)

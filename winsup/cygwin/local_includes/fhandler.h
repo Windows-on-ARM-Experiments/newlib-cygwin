@@ -1245,7 +1245,7 @@ public:
   int fstatvfs (struct statvfs *buf);
   int fadvise (off_t, off_t, int);
   int fallocate (int, off_t, off_t);
-  int init (HANDLE, DWORD, mode_t, int64_t);
+  int init (HANDLE, DWORD, mode_t); //, int64_t);
   static int create (fhandler_pipe *[2], unsigned, int);
   static DWORD create (LPSECURITY_ATTRIBUTES, HANDLE *, HANDLE *, DWORD,
 		       const char *, DWORD, int64_t *unique_id = NULL);
@@ -1732,9 +1732,9 @@ class fhandler_disk_file: public fhandler_base
   uint64_t fs_ioc_getflags ();
   int fs_ioc_setflags (uint64_t);
 
-  falloc_allocate (int, off_t, off_t);
-  falloc_punch_hole (off_t, off_t);
-  falloc_zero_range (int, off_t, off_t);
+  int falloc_allocate (int, off_t, off_t);
+  int falloc_punch_hole (off_t, off_t);
+  int falloc_zero_range (int, off_t, off_t);
 
  public:
   fhandler_disk_file ();
@@ -1959,7 +1959,7 @@ class fhandler_termios: public fhandler_base
  protected:
   virtual void doecho (const void *, DWORD) {};
   virtual int accept_input () {return 1;};
-  int ioctl (int, void *);
+  int ioctl (unsigned int, void *);
   tty_min *_tc;
   tty *get_ttyp () {return (tty *) tc ();}
   int eat_readahead (int n);

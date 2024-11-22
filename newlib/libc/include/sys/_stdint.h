@@ -74,12 +74,12 @@ typedef __uintmax_t uintmax_t;
 #endif
 
 #ifndef _INTPTR_T_DECLARED
-typedef __intptr_t intptr_t;
+typedef long long int intptr_t;
 #define _INTPTR_T_DECLARED
 #endif
 
 #ifndef _UINTPTR_T_DECLARED
-typedef __uintptr_t uintptr_t;
+typedef long long unsigned int uintptr_t;
 #define _UINTPTR_T_DECLARED
 #endif
 

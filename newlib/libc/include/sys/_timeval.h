@@ -39,7 +39,7 @@ typedef	__suseconds_t	suseconds_t;
 #endif
 
 #if !defined(__time_t_defined) && !defined(_TIME_T_DECLARED)
-typedef	_TIME_T_	time_t;
+typedef	long long int	time_t;
 #define	__time_t_defined
 #define	_TIME_T_DECLARED
 #endif

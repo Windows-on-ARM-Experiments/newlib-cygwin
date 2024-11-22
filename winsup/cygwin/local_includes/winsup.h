@@ -149,6 +149,8 @@ extern int cygserver_running;
 
 /******************** Initialization/Termination **********************/
 
+#define _SYMSTR(x)	#x
+
 class per_process;
 /* cygwin .dll initialization */
 void dll_crt0 (per_process *) __asm__ (_SYMSTR (dll_crt0__FP11per_process));

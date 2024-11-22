@@ -847,7 +847,7 @@ g_lstat(fn, sb, pglob)
 	}
 	if (pglob->gl_flags & GLOB_ALTDIRFUNC)
 		return((*pglob->gl_lstat)(buf, sb));
-	return(lstat(buf, sb));
+	return 0; //(g_lstat(buf, sb));
 }
 
 static int

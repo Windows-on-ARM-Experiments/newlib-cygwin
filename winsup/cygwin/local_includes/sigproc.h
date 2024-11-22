@@ -104,6 +104,9 @@ extern char myself_nowait_dummy[];
 
 extern struct sigaction *global_sigs;
 
+#define __SIGHOLD 1
+#define __SIGNOHOLD 0
+
 class lock_signals
 {
   bool worked;

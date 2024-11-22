@@ -66,7 +66,7 @@ static int	s_scale;
 /* see profil(2) where this is describe (incorrectly) */
 #define		SCALE_1_TO_1	0x10000L
 
-#define ERR(s) write(2, s, sizeof(s))
+#define ERR(s) // write(2, s, sizeof(s))
 
 void	moncontrol __P((int));
 
@@ -157,7 +157,7 @@ _mcleanup(void)
 	int endfrom;
 	size_t frompc;
 	int toindex;
-	struct rawarc rawarc;
+	// struct rawarc rawarc;
 	struct gmonparam *p = &_gmonparam;
 	struct gmonhdr gmonhdr, *hdr;
 	char *filename = (char *) "gmon.out";
@@ -187,7 +187,7 @@ _mcleanup(void)
 		char *buf;
 		/* Covers positive pid_t values. */
 		int32_t divisor = 1000*1000*1000;
-		pid_t pid = getpid();
+		pid_t pid = 0; //getpid();
 		size_t len = strlen(prefix);
 
 		if (len == 0)
@@ -221,7 +221,7 @@ _mcleanup(void)
 	}
 	len = sprintf(dbuf, "[mcleanup1] kcount 0x%x ssiz %d\n",
 	    p->kcount, p->kcountsize);
-	write(log, dbuf, len);
+//	write(log, dbuf, len);
 #endif
 	hdr = (struct gmonhdr *)&gmonhdr;
 	bzero(hdr, sizeof *hdr);
@@ -230,8 +230,8 @@ _mcleanup(void)
 	hdr->ncnt = p->kcountsize + sizeof(gmonhdr);
 	hdr->version = GMONVERSION;
 	hdr->profrate = hz;
-	write(fd, (char *)hdr, sizeof *hdr);
-	write(fd, p->kcount, p->kcountsize);
+	// write(fd, (char *)hdr, sizeof *hdr);
+	// write(fd, p->kcount, p->kcountsize);
 	endfrom = p->fromssize / sizeof(*p->froms);
 	for (fromindex = 0; fromindex < endfrom; fromindex++) {
 		if (p->froms[fromindex] == 0)
@@ -248,13 +248,13 @@ _mcleanup(void)
 				p->tos[toindex].count);
 			write(log, dbuf, len);
 #endif
-			rawarc.raw_frompc = frompc;
-			rawarc.raw_selfpc = p->tos[toindex].selfpc;
-			rawarc.raw_count = p->tos[toindex].count;
-			write(fd, &rawarc, sizeof rawarc);
+			// rawarc.raw_frompc = frompc;
+			// rawarc.raw_selfpc = p->tos[toindex].selfpc;
+			// rawarc.raw_count = p->tos[toindex].count;
+			// write(fd, &rawarc, sizeof rawarc);
 		}
 	}
-	close(fd);
+//	close(fd);
 }
 
 /*
