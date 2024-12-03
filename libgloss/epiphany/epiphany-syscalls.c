@@ -49,7 +49,7 @@
 
 
 /* prototypical inline asm */
-int __attribute__ ((section ("libgloss_epiphany")))  asm_write (int CHAN, void* ADDR, int LEN)
+int __attribute__ ((section ("libgloss_epiphany")))  asm_write2 (int CHAN, void* ADDR, int LEN)
 {
 	register int chan asm("r0") = CHAN;
 	register void* addr asm("r1") = ADDR;

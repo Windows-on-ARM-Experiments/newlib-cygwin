@@ -28,24 +28,8 @@ details. */
 #include "ntdll.h"
 #include "exception.h"
 #include "posix_timer.h"
+#include "register.h"
 #include "gcc_seh.h"
-
-/* Define macros for CPU-agnostic register access.  The _CX_foo
-   macros are for access into CONTEXT, the _MC_foo ones for access into
-   mcontext. The idea is to access the registers in terms of their job,
-   not in terms of their name on the given target. */
-#ifdef __x86_64__
-#define _CX_instPtr	Rip
-#define _CX_stackPtr	Rsp
-#define _CX_framePtr	Rbp
-/* For special register access inside mcontext. */
-#define _MC_retReg	rax
-#define _MC_instPtr	rip
-#define _MC_stackPtr	rsp
-#define _MC_uclinkReg	rbx	/* MUST be callee-saved reg */
-#else
-#error unimplemented for this target
-#endif
 
 #define CALL_HANDLER_RETRY_OUTER 10
 #define CALL_HANDLER_RETRY_INNER 10
@@ -230,7 +214,7 @@ cygwin_exception::dump_exception ()
 	}
     }
 
-#ifdef __x86_64__
+#if defined(__x86_64__)
   if (exception_name)
     small_printf ("Exception: %s at rip=%012X\r\n", exception_name, ctx->Rip);
   else
@@ -250,6 +234,10 @@ cygwin_exception::dump_exception ()
   small_printf ("cs=%04x ds=%04x es=%04x fs=%04x gs=%04x ss=%04x\r\n",
 		ctx->SegCs, ctx->SegDs, ctx->SegEs, ctx->SegFs,
 		ctx->SegGs, ctx->SegSs);
+#elif defined(__aarch64__)
+  // TODO
+  if (exception_name)
+    small_printf ("Exception: %s at pc=%012X\r\n", exception_name, ctx->Pc);
 #else
 #error unimplemented for this target
 #endif
@@ -814,13 +802,13 @@ exception::handle (EXCEPTION_RECORD *e, exception_list *frame, CONTEXT *in,
     }
 
   cygwin_exception exc (framep, in, e);
-  si.si_cyg = (void *) &exc;
+//  si.si_cyg = (void *) &exc;
   /* POSIX requires that for SIGSEGV and SIGBUS, si_addr should be set to the
      address of faulting memory reference.  For SIGILL and SIGFPE these should
      be the address of the faulting instruction.  Other signals are apparently
      undefined so we just set those to the faulting instruction too.  */
-  si.si_addr = (si.si_signo == SIGSEGV || si.si_signo == SIGBUS)
-	       ? (void *) e->ExceptionInformation[1] : (void *) in->_CX_instPtr;
+  //si.si_addr = (si.si_signo == SIGSEGV || si.si_signo == SIGBUS)
+	//       ? (void *) e->ExceptionInformation[1] : (void *) in->_CX_instPtr;
   me.incyg++;
   sig_send (NULL, si, &me);	/* Signal myself */
   if ((NTSTATUS) e->ExceptionCode == STATUS_STACK_OVERFLOW)
@@ -1319,83 +1307,85 @@ signal_exit (int sig, siginfo_t *si, void *)
   debug_printf ("exiting due to signal %d", sig);
   exit_state = ES_SIGNAL_EXIT;
 
-    switch (sig)
-      {
-      case SIGABRT:
-      case SIGBUS:
-      case SIGFPE:
-      case SIGILL:
-      case SIGQUIT:
-      case SIGSEGV:
-      case SIGSYS:
-      case SIGTRAP:
-      case SIGXCPU:
-      case SIGXFSZ:
-	if (try_to_debug ())
-	  break;
+//     switch (sig)
+//       {
+//       case SIGABRT:
+//       case SIGBUS:
+//       case SIGFPE:
+//       case SIGILL:
+//       case SIGQUIT:
+//       case SIGSEGV:
+//       case SIGSYS:
+//       case SIGTRAP:
+//       case SIGXCPU:
+//       case SIGXFSZ:
+// 	if (try_to_debug ())
+// 	  break;
 
-	if (cygheap->rlim_core == 0Ul)
-	  break;
+// 	if (cygheap->rlim_core == 0Ul)
+// 	  break;
 
-	sig |= __WCOREFLAG; /* Set flag in exit status to show that we've "dumped core" */
+// #define __WCOREFLAG 0200
+
+// 	sig |= __WCOREFLAG; /* Set flag in exit status to show that we've "dumped core" */
 
 	/* If core dump size is >1MB, try to invoke dumper to write a
 	   .core file */
-	if (cygheap->rlim_core > 1024*1024)
-	  {
-	    if (exec_prepared_command (dumper_command))
-	      break;
-	    /* If that failed, fall-through to... */
-	  }
+	// if (cygheap->rlim_core > 1024*1024)
+	//   {
+	//     if (exec_prepared_command (dumper_command))
+	//       break;
+	//     /* If that failed, fall-through to... */
+	//   }
 
-	/* Otherwise write a .stackdump */
-	if (si->si_code != SI_USER && si->si_cyg)
-	  {
-	    cygwin_exception *exc = (cygwin_exception *) si->si_cyg;
-	    if ((NTSTATUS) exc->exception_record ()->ExceptionCode
-		== STATUS_STACK_OVERFLOW)
-	      {
-		/* We're handling a stack overflow so we're running low
-		   on stack (surprise!)  The dumpstack method needs lots
-		   of stack for buffers.  So what we do here is to run
-		   dumpstack in another thread with its own stack. */
-		HANDLE thread = CreateThread (&sec_none_nih, 0,
-					      dumpstack_overflow_wrapper,
-					      exc, 0, NULL);
-		if (thread)
-		  {
-		    WaitForSingleObject (thread, INFINITE);
-		    CloseHandle (thread);
-		  }
-	      }
-	    else
-	      ((cygwin_exception *) si->si_cyg)->dumpstack ();
-	  }
-	else
-	  {
-	    CONTEXT c;
-	    c.ContextFlags = CONTEXT_FULL;
-	    RtlCaptureContext (&c);
-	    cygwin_exception exc ((PUINT_PTR) __builtin_frame_address (0), &c);
-	    exc.dumpstack ();
-	  }
-	break;
-      }
+	// /* Otherwise write a .stackdump */
+	// if (si->si_code != SI_USER) // && si->si_cyg)
+	//   {
+	//     cygwin_exception *exc = (cygwin_exception *) si->si_cyg;
+	//     if ((NTSTATUS) exc->exception_record ()->ExceptionCode
+	// 	== STATUS_STACK_OVERFLOW)
+	//       {
+	// 	/* We're handling a stack overflow so we're running low
+	// 	   on stack (surprise!)  The dumpstack method needs lots
+	// 	   of stack for buffers.  So what we do here is to run
+	// 	   dumpstack in another thread with its own stack. */
+	// 	HANDLE thread = CreateThread (&sec_none_nih, 0,
+	// 				      dumpstack_overflow_wrapper,
+	// 				      exc, 0, NULL);
+	// 	if (thread)
+	// 	  {
+	// 	    WaitForSingleObject (thread, INFINITE);
+	// 	    CloseHandle (thread);
+	// 	  }
+	//       }
+	//     else
+	//       ((cygwin_exception *) si->si_cyg)->dumpstack ();
+	//   }
+	// else
+	//   {
+	//     CONTEXT c;
+	//     c.ContextFlags = CONTEXT_FULL;
+	//     RtlCaptureContext (&c);
+	//     cygwin_exception exc ((PUINT_PTR) __builtin_frame_address (0), &c);
+	//     exc.dumpstack ();
+	//   }
+	// break;
+  //     }
 
-  lock_process until_exit (true);
+  // lock_process until_exit (true);
 
-  if (have_execed || exit_state > ES_PROCESS_LOCKED)
-    {
-      debug_printf ("recursive exit?");
-      myself.exit (sig);
-    }
+  // if (have_execed || exit_state > ES_PROCESS_LOCKED)
+  //   {
+  //     debug_printf ("recursive exit?");
+  //     myself.exit (sig);
+  //   }
 
-  /* Starve other threads in a vain attempt to stop them from doing something
-     stupid. */
-  SetThreadPriority (GetCurrentThread (), THREAD_PRIORITY_TIME_CRITICAL);
+  // /* Starve other threads in a vain attempt to stop them from doing something
+  //    stupid. */
+  // SetThreadPriority (GetCurrentThread (), THREAD_PRIORITY_TIME_CRITICAL);
 
-  sigproc_printf ("about to call do_exit (%x)", sig);
-  do_exit (sig);
+  // sigproc_printf ("about to call do_exit (%x)", sig);
+  // do_exit (sig);
 }
 } /* extern "C" */
 
@@ -1535,9 +1525,9 @@ sigpacket::process ()
 
   if (handler == SIG_IGN)
     {
-      if (si.si_code == SI_TIMER)
-	((timer_tracker *) si.si_tid)->disarm_overrun_event ();
-      sigproc_printf ("signal %d ignored", si.si_signo);
+  //     if (si.si_code == SI_TIMER)
+	// ((timer_tracker *) si.si_tid)->disarm_overrun_event ();
+  //     sigproc_printf ("signal %d ignored", si.si_signo);
       goto done;
     }
 
@@ -1560,9 +1550,9 @@ sigpacket::process ()
 	  || si.si_signo == SIGCONT || si.si_signo == SIGWINCH
 	  || si.si_signo == SIGURG)
 	{
-	  if (si.si_code == SI_TIMER)
-	    ((timer_tracker *) si.si_tid)->disarm_overrun_event ();
-	  sigproc_printf ("signal %d default is currently ignore", si.si_signo);
+	  // if (si.si_code == SI_TIMER)
+	  //   ((timer_tracker *) si.si_tid)->disarm_overrun_event ();
+	  // sigproc_printf ("signal %d default is currently ignore", si.si_signo);
 	  goto done;
 	}
 
@@ -1614,6 +1604,7 @@ done:
 
 }
 
+#if defined(__x86_64__)
 static void
 altstack_wrapper (int sig, siginfo_t *siginfo, ucontext_t *sigctx,
 		  void (*handler) (int, siginfo_t *, void *))
@@ -1664,6 +1655,7 @@ altstack_wrapper (int sig, siginfo_t *siginfo, ucontext_t *sigctx,
 	teb->Tib.StackLimit = old_limit;
     }
 }
+#endif
 
 int
 _cygtls::call_signal_handler ()
@@ -1690,9 +1682,9 @@ _cygtls::call_signal_handler ()
 
       if (infodata.si_code == SI_TIMER)
 	{
-	  timer_tracker *tt = (timer_tracker *)
-			      infodata.si_tid;
-	  infodata.si_overrun = tt->disarm_overrun_event ();
+	  // timer_tracker *tt = (timer_tracker *)
+		// 	      infodata.si_tid;
+	  // infodata.si_overrun = tt->disarm_overrun_event ();
 	}
 
       /* Save information locally on stack to pass to handler. */
@@ -1707,11 +1699,11 @@ _cygtls::call_signal_handler ()
 	{
 	  context.uc_link = 0;
 	  context.uc_flags = 0;
-	  if (thissi.si_cyg)
-	    memcpy (&context.uc_mcontext,
-		    ((cygwin_exception *) thissi.si_cyg)->context (),
-		    sizeof (CONTEXT));
-	  else
+	  // if (thissi.si_cyg)
+	  //   memcpy (&context.uc_mcontext,
+		//     ((cygwin_exception *) thissi.si_cyg)->context (),
+		//     sizeof (CONTEXT));
+	  // else
 	    {
 	      /* Software-generated signal.  We're fetching the current
 		 context, unwind to the caller and in case we're called
@@ -1724,7 +1716,7 @@ _cygtls::call_signal_handler ()
 	      __unwind_single_frame ((PCONTEXT) &context.uc_mcontext);
 	      if (stackptr > stack)
 		{
-#ifdef __x86_64__
+#if defined(__x86_64__) || defined(__aarch64__)
 		  context.uc_mcontext.rip = retaddr ();
 #else
 #error unimplemented for this target
@@ -1754,9 +1746,9 @@ _cygtls::call_signal_handler ()
 	    }
 	  context.uc_sigmask = context.uc_mcontext.oldmask = this_oldmask;
 
-	  context.uc_mcontext.cr2 = (thissi.si_signo == SIGSEGV
-				     || thissi.si_signo == SIGBUS)
-				    ? (uintptr_t) thissi.si_addr : 0;
+	  // context.uc_mcontext.cr2 = (thissi.si_signo == SIGSEGV
+		// 		     || thissi.si_signo == SIGBUS)
+		// 		    ? (uintptr_t) thissi.si_addr : 0;
 
 	  thiscontext = &context;
 	  context_copy = context;
@@ -1788,14 +1780,13 @@ _cygtls::call_signal_handler ()
 
 	    If the current code does not work as expected in the "usual"
 	    POSIX circumstances, this problem must be revisited. */
-
+#if defined(__x86_64__)
 	  /* Compute new stackbase.  We start from the high address, aligned
 	     to 16 byte. */
 	  uintptr_t new_sp = ((uintptr_t) _my_tls.altstack.ss_sp
 			      + _my_tls.altstack.ss_size) & ~0xf;
 	  /* In assembler: Save regs on new stack, move to alternate stack,
 	     call thisfunc, revert stack regs. */
-#ifdef __x86_64__
 	  /* Clobbered regs: rcx, rdx, r8, r9, r10, r11, rbp, rsp */
 	  __asm__ ("\n\
 		   movq  %[NEW_SP], %%rax  # Load alt stack into rax	\n\
@@ -1833,6 +1824,8 @@ _cygtls::call_signal_handler ()
 		       [FUNC]	"o" (thisfunc),
 		       [WRAPPER] "o" (altstack_wrapper)
 		   : "memory");
+#elif defined(__aarch64__)
+  // TODO
 #else
 #error unimplemented for this target
 #endif
@@ -1869,27 +1862,27 @@ _cygtls::call_signal_handler ()
 void
 _cygtls::signal_debugger (siginfo_t& si)
 {
-  HANDLE th;
-  /* If si.si_cyg is set then the signal was already sent to the debugger. */
-  if (isinitialized () && !si.si_cyg && (th = (HANDLE) *this)
-      && being_debugged () && SuspendThread (th) >= 0)
-    {
-      CONTEXT c;
-      c.ContextFlags = CONTEXT_FULL;
-      if (GetThreadContext (th, &c))
-	{
-	  if (incyg)
-	    c._CX_instPtr = retaddr ();
-	  memcpy (&context.uc_mcontext, &c, sizeof (CONTEXT));
-	  /* Enough space for 64 bit addresses */
-	  char sigmsg[2 * sizeof (_CYGWIN_SIGNAL_STRING
-				  " ffffffff ffffffffffffffff")];
-	  __small_sprintf (sigmsg, _CYGWIN_SIGNAL_STRING " %d %y %p",
-			   si.si_signo, thread_id, &context.uc_mcontext);
-	  OutputDebugString (sigmsg);
-	}
-      ResumeThread (th);
-    }
+  // HANDLE th;
+  // /* If si.si_cyg is set then the signal was already sent to the debugger. */
+  // if (isinitialized () && !si.si_cyg && (th = (HANDLE) *this)
+  //     && being_debugged () && SuspendThread (th) >= 0)
+  //   {
+  //     CONTEXT c;
+  //     c.ContextFlags = CONTEXT_FULL;
+  //     if (GetThreadContext (th, &c))
+	// {
+	//   if (incyg)
+	//     c._CX_instPtr = retaddr ();
+	//   memcpy (&context.uc_mcontext, &c, sizeof (CONTEXT));
+	//   /* Enough space for 64 bit addresses */
+	//   char sigmsg[2 * sizeof (_CYGWIN_SIGNAL_STRING
+	// 			  " ffffffff ffffffffffffffff")];
+	//   __small_sprintf (sigmsg, _CYGWIN_SIGNAL_STRING " %d %y %p",
+	// 		   si.si_signo, thread_id, &context.uc_mcontext);
+	//   OutputDebugString (sigmsg);
+	// }
+  //     ResumeThread (th);
+  //   }
 }
 
 extern "C" int
@@ -1939,7 +1932,7 @@ swapcontext (ucontext_t *oucp, const ucontext_t *ucp)
 /* Trampoline function to set the context to uc_link.  The pointer to the
    address of uc_link is stored in a callee-saved register, referenced by
    _MC_uclinkReg from the C code.  If uc_link is NULL, call exit. */
-#ifdef __x86_64__
+#if defined(__x86_64__)
 /* _MC_uclinkReg == %rbx */
 __asm__ ("				\n\
 	.global	__cont_link_context	\n\
@@ -1960,7 +1953,15 @@ __cont_link_context:			\n\
 	nop				\n\
 	.seh_endproc			\n\
 	");
-
+#elif defined(__aarch64__)
+  // TODO
+  __asm__ ("				\n\
+	.global	__cont_link_context	\n\
+	.seh_proc __cont_link_context	\n\
+__cont_link_context:			\n\
+	.seh_endprologue		\n\
+	.seh_endproc			\n\
+	");
 #else
 #error unimplemented for this target
 #endif
@@ -2006,29 +2007,31 @@ makecontext (ucontext_t *ucp, void (*func) (void), int argc, ...)
        the definition.  This potentially allows porting 32 bit applications
        providing pointer values to func without additional porting effort. */
   va_start (ap, argc);
-  for (int i = 0; i < argc; ++i)
-#ifdef __x86_64__
-    switch (i)
-      {
-      case 0:
-	ucp->uc_mcontext.rcx = va_arg (ap, uintptr_t);
-	break;
-      case 1:
-	ucp->uc_mcontext.rdx = va_arg (ap, uintptr_t);
-	break;
-      case 2:
-	ucp->uc_mcontext.r8 = va_arg (ap, uintptr_t);
-	break;
-      case 3:
-	ucp->uc_mcontext.r9 = va_arg (ap, uintptr_t);
-	break;
-      default:
-	sp[i + 1] = va_arg (ap, uintptr_t);
-	break;
-      }
-#else
-#error unimplemented for this target
-#endif
+//   for (int i = 0; i < argc; ++i)
+// #if defined(__x86_64__)
+//     switch (i)
+//       {
+//       case 0:
+// 	ucp->uc_mcontext.rcx = va_arg (ap, uintptr_t);
+// 	break;
+//       case 1:
+// 	ucp->uc_mcontext.rdx = va_arg (ap, uintptr_t);
+// 	break;
+//       case 2:
+// 	ucp->uc_mcontext.r8 = va_arg (ap, uintptr_t);
+// 	break;
+//       case 3:
+// 	ucp->uc_mcontext.r9 = va_arg (ap, uintptr_t);
+// 	break;
+//       default:
+// 	sp[i + 1] = va_arg (ap, uintptr_t);
+// 	break;
+//       }
+// #elif defined(__aarch64__)
+//   // TODO
+// #else
+// #error unimplemented for this target
+// #endif
   va_end (ap);
   /* Store pointer to uc_link at the top of the stack. */
   sp[argc + 1] = (uintptr_t) ucp->uc_link;

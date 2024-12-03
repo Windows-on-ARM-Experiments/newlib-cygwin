@@ -37,7 +37,7 @@
 #endif
 
 #ifndef _SIZE_T_DECLARED
-typedef	__size_t	size_t;
+typedef	long long unsigned int	size_t;
 #define	_SIZE_T_DECLARED
 #endif
 

@@ -14,7 +14,7 @@
  * they apply.
  */
 
-int _write (int fd, char *buf, int len)
+int _write2 (int fd, char *buf, int len)
 {
   int i = 0;
   while (i < len)

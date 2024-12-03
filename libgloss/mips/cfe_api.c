@@ -504,7 +504,7 @@ cfe_strlen(char *name)
 
 #if defined(CFE_API_write) || defined(CFE_API_ALL)
 int
-cfe_write(int handle, unsigned char *buffer, int length)
+cfe_write2 (int handle, unsigned char *buffer, int length)
 {
     return cfe_writeblk(handle, 0, buffer, length);
 }

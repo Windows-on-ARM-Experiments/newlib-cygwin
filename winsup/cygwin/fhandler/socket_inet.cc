@@ -65,9 +65,9 @@
       ReleaseMutex (wsock_mtx); \
     }
 
-static wsa_event wsa_events[NUM_SOCKS] __attribute__((section (".cygwin_dll_common"), shared));
+static wsa_event wsa_events[NUM_SOCKS] __attribute__((section (".cygwin_dll_common")));
 
-static LONG socket_serial_number __attribute__((section (".cygwin_dll_common"), shared));
+static LONG socket_serial_number __attribute__((section (".cygwin_dll_common")));
 
 static HANDLE wsa_slot_mtx;
 

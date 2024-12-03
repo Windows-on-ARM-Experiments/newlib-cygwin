@@ -68,8 +68,9 @@ int
 _puts_r (struct _reent *ptr,
        const char * s)
 {
-#ifdef _FVWRITE_IN_STREAMIO
+#ifndef _FVWRITE_IN_STREAMIO
   int result;
+  
   size_t c = strlen (s);
   struct __suio uio;
   struct __siov iov[2];
@@ -99,9 +100,11 @@ _puts_r (struct _reent *ptr,
   FILE *fp;
   _REENT_SMALL_CHECK_INIT (ptr);
 
+
   fp = _stdout_r (ptr);
   CHECK_INIT (ptr, fp);
-  _newlib_flockfile_start (fp);
+
+  // _newlib_flockfile_start (fp);
   /* Make sure we can write.  */
   if (cantwrite (ptr, fp))
     goto err;
@@ -117,7 +120,7 @@ _puts_r (struct _reent *ptr,
   result = '\n';
 
 err:
-  _newlib_flockfile_end (fp);
+  // _newlib_flockfile_end (fp);
   return result;
 #endif
 }

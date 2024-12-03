@@ -163,7 +163,7 @@ __do_global_dtors ()
 #endif
 
 void
-profil_write (int type, char *buffer, int len)
+profil_write2 (int type, char *buffer, int len)
 {
   static int des = -1;
 

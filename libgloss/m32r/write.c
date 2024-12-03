@@ -4,7 +4,7 @@
 #include "eit.h"
 
 int
-_write (int file, char *ptr, int len)
+_write2 (int file, char *ptr, int len)
 {
   return TRAP0 (SYS_write, file, ptr, len);
 }

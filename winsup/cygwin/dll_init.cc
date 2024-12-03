@@ -304,7 +304,10 @@ dll_list::alloc (HINSTANCE h, per_process *p, dll_type type)
   /* Called under loader lock conditions so this function can't be called
      multiple times in parallel.  The static buffer is safe. */
   PWCHAR ntname = nt_max_path_buf ();
-  GetModuleFileNameW (h, ntname, NT_MAX_PATH);
+  DWORD res = GetModuleFileNameW (h, ntname, NT_MAX_PATH);
+  DWORD error = GetLastError ();
+  if (!res)
+    return NULL;
   PWCHAR modname = form_ntname (ntname, NT_MAX_PATH, ntname);
   DWORD ntnamelen = modname - ntname;
   while (modname > ntname && *(modname - 1) != L'\\')

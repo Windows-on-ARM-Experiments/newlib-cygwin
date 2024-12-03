@@ -54,7 +54,7 @@ int _read (int fd, char *buf,size_t nbytes)
   MACRO(SYS_read);
 }
 
-int _write (int fd, char *buf, size_t nbytes)
+int _write2 (int fd, char *buf, size_t nbytes)
 {
   ARGW(0,fd);
   ARGP(1,buf);

@@ -1,4 +1,4 @@
-extern int _write (int, char *, int);
+extern int _write2 (int, char *, int);
 
 void outbyte (unsigned char c)
 {

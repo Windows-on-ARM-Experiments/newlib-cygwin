@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 register char *stack_ptr asm ("sp");
-extern int _write (int, char *, int);
+extern int _write2 (int, char *, int);
 
 caddr_t 
   _sbrk(incr)

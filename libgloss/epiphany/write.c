@@ -46,7 +46,7 @@
             code in errno.                                                   */
 /* ------------------------------------------------------------------------- */
 ssize_t __attribute__ ((section ("libgloss_epiphany")))
-_write (int file, const void *ptr, size_t len)
+_write2 (int file, const void *ptr, size_t len)
 {
   return asm_write (file, ptr, len);
 }	/* _write () */

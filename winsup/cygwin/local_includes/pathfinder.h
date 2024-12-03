@@ -92,7 +92,7 @@ public:
 
   /* pathfinder::simple_criterion_interface
      Overload this test method when you need a single filename.  */
-  class simple_criterion_interface
+  struct simple_criterion_interface
     : public criterion_interface
   {
     virtual bool test (searchdirlist::iterator dir,
@@ -116,7 +116,7 @@ public:
 
   /* pathfinder::path_conv_criterion_interface
      Overload this test method when you need a path_conv. */
-  class path_conv_criterion_interface
+  struct path_conv_criterion_interface
     : public simple_criterion_interface
   {
     path_conv mypc_;
@@ -124,11 +124,11 @@ public:
     unsigned opt_;
 
     /* simple_criterion_interface */
-    virtual bool test (const char * filename) const
-    {
-      pc_.check (filename, opt_);
-      return test (pc_);
-    }
+    // virtual bool test (const char * filename) const
+    // {
+    //   pc_.check (filename, opt_);
+    //   return test (pc_);
+    // }
 
   public:
     path_conv_criterion_interface (unsigned opt = PC_SYM_FOLLOW)
@@ -143,7 +143,7 @@ public:
       , opt_ (opt)
     {}
 
-    virtual bool test (path_conv & pc) const = 0;
+//    virtual bool test (path_conv & pc) const = 0;
   };
 
 
@@ -159,14 +159,14 @@ public:
     {}
 
     /* path_conv_criterion_interface */
-    virtual bool test (path_conv & pc) const
-    {
-      if (pc.exists () && !pc.isdir ())
-	return true;
+  //   virtual bool test (path_conv & pc) const
+  //   {
+  //     if (pc.exists () && !pc.isdir ())
+	// return true;
 
-      pc.error = ENOENT;
-      return false;
-    }
+  //     pc.error = ENOENT;
+  //     return false;
+  //   }
   };
 
 

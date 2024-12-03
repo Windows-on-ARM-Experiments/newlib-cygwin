@@ -9,7 +9,7 @@
 
 /* Write to a file.  */
 ssize_t
-_write (int file, const void *ptr, size_t len)
+_write2 (int file, const void *ptr, size_t len)
 {
   struct fdentry *fd =__get_fdentry (file);
   long data_block[3];

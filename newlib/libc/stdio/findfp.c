@@ -244,11 +244,11 @@ cleanup_stdio (struct _reent *ptr)
 void
 __sinit (struct _reent *s)
 {
-  __sfp_lock_acquire ();
+//  __sfp_lock_acquire ();
 
   if (_REENT_CLEANUP(s))
     {
-      __sfp_lock_release ();
+//      __sfp_lock_release ();
       return;
     }
 
@@ -256,7 +256,7 @@ __sinit (struct _reent *s)
   _REENT_CLEANUP(s) = cleanup_stdio;	/* conservative */
 
   global_stdio_init ();
-  __sfp_lock_release ();
+//  __sfp_lock_release ();
 }
 
 #ifndef __SINGLE_THREAD__

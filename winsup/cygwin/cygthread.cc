@@ -189,7 +189,7 @@ cygthread::async_create (ULONG_PTR arg)
 {
   cygthread *that = (cygthread *) arg;
   that->create ();
-  ::SetThreadPriority (that->h, THREAD_PRIORITY_HIGHEST);
+//  ::SetThreadPriority (that->h, THREAD_PRIORITY_HIGHEST);
   that->zap_h ();
 }
 

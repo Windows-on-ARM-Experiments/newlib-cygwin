@@ -72,6 +72,11 @@ struct per_process_cxx_malloc __cygwin_cxx_malloc =
 /* Set up pointers to various pieces so the dll can then use them,
    and then jump to the dll.  */
 
+uintptr_t __declspec(dllimport)
+cygwin_internal (cygwin_getinfo_types t, ...);
+
+void *malloc (size_t size) __declspec(dllimport);
+
 int
 _cygwin_crt0_common (MainFunc f, per_process *u)
 {

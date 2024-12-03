@@ -32,6 +32,7 @@ details. */
 #include "ntdll.h"
 #include "cygwait.h"
 #include "exception.h"
+#include "register.h"
 
 /* For Linux compatibility, the length of a thread name is 16 characters. */
 #define THRNAMELEN 16
@@ -366,7 +367,9 @@ pthread::init_mainthread ()
   pthread *thread = _my_tls.tid;
   if (!thread || thread == pthread_null::get_null_pthread ())
     {
+      DebugBreak ();
       thread = new pthread ();
+      return;
       if (!thread)
 	api_fatal ("failed to create mainthread object");
     }
@@ -629,7 +632,7 @@ pthread::cancel ()
       threadlist_t *tl_entry = cygheap->find_tls (cygtls);
       if (!cygtls->inside_kernel (&context))
 	{
-	  context.Rip = (ULONG_PTR) pthread::static_cancel_self;
+	  context._CX_instPtr = (ULONG_PTR) pthread::static_cancel_self;
 	  SetThreadContext (win32_obj_id, &context);
 	}
       cygheap->unlock_tls (tl_entry);
@@ -1946,7 +1949,11 @@ pthread_spinlock::lock ()
       else if (spins < FAST_SPINS_LIMIT)
         {
           ++spins;
+#if defined(__x86_64__)
           __asm__ volatile ("pause":::);
+#elif defined(__aarch64__)
+          // TODO
+#endif
         }
       else
 	{
@@ -2882,6 +2889,7 @@ semaphore::getinternal (sem_t *sem, int *sfd, unsigned long long *shash,
 pthread *
 pthread_null::get_null_pthread ()
 {
+  return NULL;
   /* because of weird entry points */
   _instance.magic = 0;
   return &_instance;

@@ -37,7 +37,7 @@ print(char *ptr)
  *          open will only return an error.
  */
 int
-_write (int fd, char *buf, int nbytes)
+_write2 (int fd, char *buf, int nbytes)
 {
   STUB_WRITE(buf, nbytes);
   return (nbytes);

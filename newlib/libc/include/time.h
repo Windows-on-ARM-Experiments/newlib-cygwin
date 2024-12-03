@@ -93,6 +93,7 @@ char      *strptime (const char *__restrict,
 				 struct tm *__restrict);
 #endif
 #if __GNU_VISIBLE
+typedef struct __locale_t *locale_t;
 char *strptime_l (const char *__restrict, const char *__restrict,
 		  struct tm *__restrict, locale_t);
 #endif

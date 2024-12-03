@@ -154,7 +154,7 @@ _open(const char *buf, int flags, int mode)
 
 
 int
-_write(int fd, const char *buf, int nbytes)
+_write2 (int fd, const char *buf, int nbytes)
 {
     int err;
 

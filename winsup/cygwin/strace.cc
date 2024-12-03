@@ -138,6 +138,7 @@ mypid (char *buf)
 int
 strace::vsprntf (char *buf, const char *func, const char *infmt, va_list ap)
 {
+  return 0;
   int count;
   char fmt[80];
   static NO_COPY bool nonewline = false;
@@ -173,7 +174,7 @@ strace::vsprntf (char *buf, const char *func, const char *infmt, va_list ap)
 	{
 	  PWCHAR p = wcsrchr (global_progname, L'\\');
 	  ++p;
-	  PWCHAR pe = wcsrchr (p, '.');
+	  PWCHAR pe = wcsrchr (p, '.'); 
 	  if (!pe || wcscasecmp (pe, L".exe"))
 	    pe = wcsrchr (p, L'\0');
 	  pe = wcpncpy (progname, p, pe - p);

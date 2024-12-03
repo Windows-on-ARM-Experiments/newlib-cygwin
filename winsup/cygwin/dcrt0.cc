@@ -800,6 +800,8 @@ main_thread_sinit ()
 void
 dll_crt0_1 (void *)
 {
+  // ExitProcess (user_data->main(0, NULL, NULL));
+
   extern void initial_setlocale ();
 
   _my_tls.incyg++;
@@ -820,7 +822,8 @@ dll_crt0_1 (void *)
      have overridden malloc.  We only know about that at this stage,
      unfortunately. */
   malloc_init ();
-  user_shared->initialize ();
+  // user_shared->initialize ();
+
 
 #ifdef CYGHEAP_DEBUG
   int i = 0;
@@ -846,7 +849,7 @@ dll_crt0_1 (void *)
      otherwise it is reinitalized in fixup_after_fork */
   if (__in_forkee != FORKING)
     {
-      pthread::init_mainthread ();
+//      pthread::init_mainthread ();
       _pei386_runtime_relocator (user_data);
     }
 
@@ -875,7 +878,7 @@ dll_crt0_1 (void *)
       longjmp (fork_info->jmp, true);
     }
 
-  main_thread_sinit ();
+//  main_thread_sinit ();
 
 #ifdef DEBUGGING
   {
@@ -883,7 +886,7 @@ dll_crt0_1 (void *)
   fork_init ();
   }
 #endif
-  pinfo_init (envp, envc);
+//  pinfo_init (envp, envc);
   strace.dll_info ();
 
   /* Allocate cygheap->fdtab */
@@ -892,12 +895,12 @@ dll_crt0_1 (void *)
   /* Set internal locale to the environment settings. */
   initial_setlocale ();
 
-  uinfo_init ();	/* initialize user info */
+  // uinfo_init ();	/* initialize user info */
 
   /* Connect to tty. */
   tty::init_session ();
 
-  if (!__argc)
+  if (false && !__argc)
     {
       PWCHAR wline = GetCommandLineW ();
       size_t size = sys_wcstombs_no_path (NULL, 0, wline) + 1;
@@ -930,23 +933,26 @@ dll_crt0_1 (void *)
 
   /* Set up program_invocation_name and program_invocation_short_name.
      __progname is an export alias for program_invocation_short_name. */
-  program_invocation_name = __argv[0];
-  if (__argv[0] && (program_invocation_short_name = strrchr (__argv[0], '/')))
-    ++program_invocation_short_name;
-  else
-    program_invocation_short_name = __argv[0];
+//  program_invocation_name = __argv[0];
+  // if (__argv[0] && (program_invocation_short_name = strrchr (__argv[0], '/')))
+  //   ++program_invocation_short_name;
+  // else
+  //   program_invocation_short_name = __argv[0];
+
   if (program_invocation_short_name)
     {
       char *cp = strchr (program_invocation_short_name, '\0') - 4;
       if (cp > program_invocation_short_name && ascii_strcasematch (cp, ".exe"))
 	*cp = '\0';
     }
+
   SetThreadName (GetCurrentThreadId (), program_invocation_short_name);
 
   (void) xdr_set_vprintf (&cygxdr_vwarnx);
   cygwin_finished_initializing = true;
   /* Call init of loaded dlls. */
   dlls.init ();
+
 
   /* Execute any specified "premain" functions */
   if (user_data->premain[PREMAIN_LEN / 2])
@@ -992,14 +998,15 @@ dll_crt0_1 (void *)
 	 original argv and potentially affect output of /proc/self/cmdline.
 	 We opt for the latter here because it's the lesser evil. */
       char **newargv = (char **) malloc ((__argc + 1) * sizeof (char *));
-      if (newargv)
-	memcpy (newargv, __argv, (__argc + 1) * sizeof (char *));
-      else
-	newargv = __argv;
+  //     if (newargv)
+	// memcpy (newargv, __argv, (__argc + 1) * sizeof (char *));
+  //     else
+	// newargv = __argv;
       /* Handle any signals which may have arrived */
       sig_dispatch_pending (false);
       _my_tls.call_signal_handler ();
       _my_tls.incyg--;	/* Not in Cygwin anymore */
+      ExitProcess (user_data->main(__argc, 0, environ));
       cygwin_exit (user_data->main (__argc, newargv, environ));
     }
   __asm__ ("				\n\
@@ -1014,13 +1021,15 @@ __cygwin_exit_return:			\n\
 extern "C" void
 _dll_crt0 ()
 {
+//  ExitProcess (user_data->main(0, NULL, NULL));
   /* Starting with Windows 10 rel 1511, the main stack of an application is
      not reproducible if a 64 bit process has been started from a 32 bit
      process.  Given that we have enough virtual address space on 64 bit
      anyway, we now always move the main thread stack to the stack area
      reserved for pthread stacks.  This allows a reproducible stack space
      under our own control and avoids collision with the OS. */
-  if (!dynamically_loaded)
+#if !defined(__aarch64__)
+  if (!)
     {
       if (__in_forkee != FORKING)
 	{
@@ -1030,7 +1039,7 @@ _dll_crt0 ()
 	  PVOID stackaddr = create_new_main_thread_stack (allocationbase);
 	  if (stackaddr)
 	    {
-#ifdef __x86_64__
+#if defined(__x86_64__)
 	      /* Set stack pointer to new address.  Set frame pointer to
 	         stack pointer and subtract 32 bytes for shadow space. */
 	      __asm__ ("\n\
@@ -1050,6 +1059,7 @@ _dll_crt0 ()
       else
 	fork_info->alloc_stack ();
     }
+#endif
 
   fesetenv (FE_DFL_ENV);
   _main_tls = &_my_tls;

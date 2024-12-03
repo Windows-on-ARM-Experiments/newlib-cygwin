@@ -275,7 +275,7 @@ extern "C" {
 #ifdef _GNU_SOURCE
 #define	__GNU_VISIBLE		1
 #else
-#define	__GNU_VISIBLE		0
+#define	__GNU_VISIBLE		1
 #endif
 
 #if defined(_ISOC2X_SOURCE) || \

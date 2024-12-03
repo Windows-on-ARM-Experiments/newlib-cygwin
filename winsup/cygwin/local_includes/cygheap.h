@@ -615,25 +615,25 @@ class cygheap_fdget : public cygheap_fdmanip
 public:
   cygheap_fdget (int fd, bool lockit = false, bool do_set_errno = true)
   {
-    if (lockit)
-      cygheap->fdtab.lock ();
-    if (fd >= 0 && fd < (int) cygheap->fdtab.size && cygheap->fdtab[fd] != NULL)
-      {
-	this->fd = fd;
-	locked = lockit;
-	fh = cygheap->fdtab[fd];
-	fh->inc_refcnt ();
-      }
-    else
-      {
-	this->fd = -1;
-	if (do_set_errno)
-	  set_errno (EBADF);
-	if (lockit)
-	  cygheap->fdtab.unlock ();
-	locked = false;
-	fh = NULL;
-      }
+//     if (lockit)
+//       cygheap->fdtab.lock ();
+//     if (fd >= 0 && fd < (int) cygheap->fdtab.size && cygheap->fdtab[fd] != NULL)
+//       {
+	// this->fd = fd;
+	// locked = lockit;
+	// fh = cygheap->fdtab[fd];
+	// fh->inc_refcnt ();
+//       }
+//     else
+//       {
+// 	this->fd = -1;
+// 	if (do_set_errno)
+// 	  set_errno (EBADF);
+// 	if (lockit)
+// 	  cygheap->fdtab.unlock ();
+// 	locked = false;
+// 	fh = NULL;
+//       }
   }
   ~cygheap_fdget ()
   {

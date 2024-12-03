@@ -273,6 +273,8 @@ private:
 #include "cygerrno.h"
 #include "ntdll.h"
 
+#define __CYGTLS_PADSIZE__ 12800	/* Must be 16-byte aligned */
+
 #define _my_tls (*((_cygtls *) ((PBYTE) NtCurrentTeb()->Tib.StackBase \
 		                - __CYGTLS_PADSIZE__)))
 extern _cygtls *_main_tls;
@@ -295,7 +297,11 @@ public:
        address of the _except block to restore the context correctly.
        See comment preceeding myfault_altstack_handler in exception.cc. */
     ret = (DWORD64) _ret;
+#if defined(__x86_64__)
     __asm__ volatile ("movq %%rsp,%0": "=o" (frame));
+#elif defined(__aarch64__)
+    // TODO
+#endif
   }
   ~san () __attribute__ ((always_inline))
   {

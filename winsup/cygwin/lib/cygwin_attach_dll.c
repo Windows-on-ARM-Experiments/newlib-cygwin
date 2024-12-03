@@ -13,6 +13,8 @@ details. */
 #include <sys/cygwin.h>
 #include "crt0.h"
 
+PVOID dll_dllcrt0 (HMODULE, struct per_process *) __declspec (dllimport);
+
 /* for a loaded dll */
 PVOID
 cygwin_attach_dll (HMODULE h, MainFunc f)

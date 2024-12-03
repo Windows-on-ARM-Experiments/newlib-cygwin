@@ -4,7 +4,7 @@
 #include "sys/syscall.h"
 #include <stdlib.h>
 
-extern int _write (int, char *, int);
+extern int _write2 (int, char *, int);
 caddr_t
 _sbrk (int incr)
 {

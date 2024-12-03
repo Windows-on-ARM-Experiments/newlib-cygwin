@@ -36,7 +36,7 @@ int	_close		(int);
 int	_swiclose	(int);
 int	_open		(const char *, int, ...);
 int	_swiopen	(const char *, int);
-int	_write		(int, const void *, size_t);
+int	_write2 (int, const void *, size_t);
 int	_swiwrite	(int, const void *, size_t);
 _off_t	_lseek		(int, _off_t, int);
 _off_t	_swilseek	(int, _off_t, int);
@@ -339,7 +339,7 @@ _swiwrite (int file, const void * ptr, size_t len)
 
 /* file, is a user file descriptor. */
 int __attribute__((weak))
-_write (int file, const void * ptr, size_t len)
+_write2 (int file, const void * ptr, size_t len)
 {
   int slot = findslot (remap_handle (file));
   int x = _swiwrite (file, ptr, len);

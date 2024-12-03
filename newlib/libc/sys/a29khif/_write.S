@@ -31,10 +31,10 @@
 	.include "sys/sysmac.h"
 	.text
 	.word	0x00050000		; Debugger tag word
-	.global	__write
+	.global	__write2
 ;; syscalls used now -- 	.global	_write
 
-__write:
+__write2:
 ;; syscalls used now -- _write:
 	const tav,HIF_write @ asneq V_SYSCALL,gr1,gr1 @ jmpti tav,lr0 @ const tpc,_errno @ consth tpc,_errno @ store 0,0,tav,tpc @ jmpi lr0 @ constn v0,-1
 	.end

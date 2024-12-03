@@ -21,6 +21,7 @@
 #include <errno.h>
 #include <pthread.h>
 #include "profil.h"
+#include "register.h"
 
 #define SLEEPTIME (1000 / PROF_HZ)
 
@@ -42,11 +43,7 @@ get_thrpc (HANDLE thr)
   ctx.ContextFlags = CONTEXT_CONTROL | CONTEXT_INTEGER;
   pc = (size_t) - 1;
   if (GetThreadContext (thr, &ctx)) {
-#ifdef __x86_64__
-    pc = ctx.Rip;
-#else
-#error unimplemented for this target
-#endif
+    pc = ctx._CX_instPtr;
   }
   ResumeThread (thr);
   return pc;
@@ -98,7 +95,7 @@ profthr_func (LPVOID arg)
       profthr_byhandle (p->targthr);
 
       /* Record profiling samples for other pthreads, if any. */
-      cygwin_internal (CW_CYGHEAP_PROFTHR_ALL, profthr_byhandle);
+//      cygwin_internal (CW_CYGHEAP_PROFTHR_ALL, profthr_byhandle);
 
 #if 0
       print_prof (p);

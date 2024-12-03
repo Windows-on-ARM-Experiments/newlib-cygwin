@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include "trap.h"
 
-extern int _write (int, char *, size_t);
+extern int _write2 (int, char *, size_t);
 
 
 caddr_t

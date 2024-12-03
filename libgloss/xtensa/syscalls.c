@@ -102,7 +102,7 @@ _close (int fd)
 
 _ssize_t
 __WEAK_FUNCTION_ATTR__
-_write (int fd, const char *buf, size_t cnt)
+_write2 (int fd, const char *buf, size_t cnt)
 {
     int ret = 0;
 #ifdef WITH_SEMIHOSTING

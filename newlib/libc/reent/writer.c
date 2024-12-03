@@ -46,7 +46,7 @@ _write_r (struct _reent *ptr,
   _ssize_t ret;
 
   errno = 0;
-  if ((ret = (_ssize_t)_write (fd, buf, cnt)) == -1 && errno != 0)
+  if ((ret = (_ssize_t)_write (fd, buf, cnt)) ==-1 && errno != 0)
     _REENT_ERRNO(ptr) = errno;
   return ret;
 }

@@ -26,7 +26,7 @@
 
 /* Write one chunk to the host file.  Implements HL_SYSCALL_WRITE.  */
 static ssize_t
-_hl_write (int fd, const char *buf, size_t nbyte)
+_hl_write2 (int fd, const char *buf, size_t nbyte)
 {
   ssize_t ret;
   int32_t n;
@@ -61,7 +61,7 @@ _hl_write (int fd, const char *buf, size_t nbyte)
 }
 
 ssize_t
-_write (int fd, const char *buf, size_t nbyte)
+_write2 (int fd, const char *buf, size_t nbyte)
 {
   const uint32_t hl_iochunk = _hl_iochunk_size ();
   size_t to_write = nbyte;

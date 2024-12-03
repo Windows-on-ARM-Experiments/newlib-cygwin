@@ -17,7 +17,7 @@ static void write_scc_data (unsigned char n)
 }
 
 int
-_write (int dev, void *buf, unsigned int len)
+_write2 (int dev, void *buf, unsigned int len)
 {
   int i;
   char *string = (char*)buf;

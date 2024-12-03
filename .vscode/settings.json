@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "cerrno": "cpp",
+        "system_error": "cpp",
+        "*.tcc": "cpp",
+        "string_view": "cpp",
+        "cygwin_dll.h": "c",
+        "local.h": "c",
+        "cstdlib": "cpp",
+        "memory": "cpp"
+    }
+}

@@ -15,7 +15,7 @@
 
 #include <sys/syscall.h>
 
-int _write (int fd, char *buffer, int nbytes)
+int _write2 (int fd, char *buffer, int nbytes)
 {
   HOST_SERVICE (SVC_WRITE);
 }

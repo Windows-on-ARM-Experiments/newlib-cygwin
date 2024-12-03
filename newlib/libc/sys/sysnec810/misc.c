@@ -2,7 +2,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-extern int _write (int, void*, unsigned int);
+extern int _write2 (int, void*, unsigned int);
 
 int
 _open() {

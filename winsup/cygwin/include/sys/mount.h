@@ -20,6 +20,8 @@ details. */
 extern "C" {
 #endif
 
+#define _BIT(_bit)	(1U << (_bit))
+
 enum
 {
   MOUNT_TEXT =		_BIT ( 0),	/* "text" format read/writes */

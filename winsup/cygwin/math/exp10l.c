@@ -1,8 +1,8 @@
 #undef exp10l
 #include <math.h>
 
-long double
-exp10l (long double x)
+float
+exp10l (float x)
 {
   return powl (10.0L, x);
 }

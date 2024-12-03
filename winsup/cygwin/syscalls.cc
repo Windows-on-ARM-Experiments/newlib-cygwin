@@ -1348,22 +1348,27 @@ extern "C" ssize_t
 write (int fd, const void *ptr, size_t len)
 {
   ssize_t res = -1;
+//  pthread_testcancel ();
 
-  pthread_testcancel ();
+//   __try
+//     {
 
-  __try
-    {
+	WriteConsoleA(GetStdHandle(STD_OUTPUT_HANDLE), ptr, len, NULL, NULL);
+	return len;
       cygheap_fdget cfd (fd);
-      if (cfd < 0)
-	__leave;
+
+     if (cfd < 0)
+	//   __leave;
+	return 0;
+
 
       if ((cfd->get_flags () & O_PATH)
 	  || (cfd->get_flags () & O_ACCMODE) == O_RDONLY)
 	{
 	  set_errno (EBADF);
-	  __leave;
+	//   __leave;
+	  return 0;
 	}
-
       /* Could block, so let user know we at least got here.  */
       if (fd == 1 || fd == 2)
 	paranoid_printf ("write(%d, %p, %d)", fd, ptr, len);
@@ -1371,9 +1376,10 @@ write (int fd, const void *ptr, size_t len)
 	syscall_printf  ("write(%d, %p, %d)", fd, ptr, len);
 
       res = cfd->write (ptr, len);
-    }
-  __except (EFAULT) {}
-  __endtry
+  return 0;
+//     }
+//   __except (EFAULT) {}
+//   __endtry
   syscall_printf ("%lR = write(%d, %p, %d)", res, fd, ptr, len);
   return res;
 }
@@ -1594,7 +1600,7 @@ static int
 posix_getdents_lseek (cygheap_fdget &cfd, off_t pos, int dir)
 {
   long cur = cfd->telldir (cfd->getdents_dir ());
-  long abs_pos;
+  long abs_pos = 0;
 
   switch (dir)
     {

@@ -11,7 +11,7 @@ extern int errno;
 #include "warning.h"
 
 int
-_write (int   file,
+_write2 (int   file,
         char *ptr,
         int   len)
 {

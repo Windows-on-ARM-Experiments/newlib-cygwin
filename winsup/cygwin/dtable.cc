@@ -159,6 +159,8 @@ dtable::stdio_init ()
   HANDLE out = GetStdHandle (STD_OUTPUT_HANDLE);
   HANDLE err = GetStdHandle (STD_ERROR_HANDLE);
 
+	// WriteConsoleA(GetStdHandle(STD_OUTPUT_HANDLE), "Hello\n", 6, NULL, NULL);
+
   init_std_file_from_handle (0, in);
 
   /* STD_ERROR_HANDLE has been observed to be the same as
@@ -172,18 +174,18 @@ dtable::stdio_init ()
     {
       /* Since this code is not invoked for forked tasks, we don't have
 	 to worry about the close-on-exec flag here.  */
-      if (!DuplicateHandle (GetCurrentProcess (), out,
-			    GetCurrentProcess (), &err,
-			    0, TRUE, DUPLICATE_SAME_ACCESS))
-	{
-	  /* If that fails, do this as a fall back.  */
-	  err = out;
-	  system_printf ("couldn't make stderr distinct from stdout, %E");
-	}
+  //     if (!DuplicateHandle (GetCurrentProcess (), out,
+	// 		    GetCurrentProcess (), &err,
+	// 		    0, TRUE, DUPLICATE_SAME_ACCESS))
+	// {
+	//   /* If that fails, do this as a fall back.  */
+	//   err = out;
+	//   system_printf ("couldn't make stderr distinct from stdout, %E");
+	// }
     }
 
-  init_std_file_from_handle (1, out);
-  init_std_file_from_handle (2, err);
+  // init_std_file_from_handle (1, out);
+  // init_std_file_from_handle (2, err);
 }
 
 const int dtable::initial_archetype_size;

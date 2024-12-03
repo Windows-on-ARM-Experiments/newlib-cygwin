@@ -407,6 +407,7 @@ cygwin_create_path SIGFE
 cygwin_detach_dll SIGFE_MAYBE
 cygwin_dll_init NOSIGFE
 cygwin_internal NOSIGFE
+cygwin_internal2 NOSIGFE
 cygwin_logon_user SIGFE
 cygwin_posix_path_list_p NOSIGFE
 cygwin_set_impersonation_token SIGFE
@@ -1081,7 +1082,7 @@ powf NOSIGFE
 powl NOSIGFE
 ppoll SIGFE
 pread SIGFE
-printf SIGFE
+printf NOSIGFE
 pselect SIGFE
 psiginfo SIGFE
 psignal SIGFE
@@ -1204,10 +1205,10 @@ ptsname SIGFE
 ptsname_r SIGFE
 putc SIGFE
 putc_unlocked SIGFE
-putchar SIGFE
+putchar NOSIGFE
 putchar_unlocked SIGFE
 putenv SIGFE
-puts SIGFE
+puts NOSIGFE
 pututline SIGFE
 pututxline SIGFE
 putw SIGFE

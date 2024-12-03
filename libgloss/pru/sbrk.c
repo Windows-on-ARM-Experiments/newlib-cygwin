@@ -18,7 +18,7 @@
 
 extern char _heap_start[];
 extern void exit (int) __attribute ((__noreturn__));
-extern int _write (int, char *, int);
+extern int _write2 (int, char *, int);
 
 caddr_t
 _sbrk (size_t incr)

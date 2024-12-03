@@ -64,7 +64,7 @@ clock_t _clock (void);
 int _swiclose (int);
 int _open (const char *, int, ...);
 int _swiopen (const char *, int);
-int _write (int, const char *, size_t);
+int _write2 (int, const char *, size_t);
 int _swiwrite (int, const char *, size_t);
 off_t _lseek (int, off_t, int);
 off_t _swilseek (int, off_t, int);
@@ -471,8 +471,9 @@ _swiwrite (int fh, const char *ptr, size_t len)
 
 /* fd, is a user file descriptor. */
 int
-_write (int fd, const char *ptr, size_t len)
+_write2 (int fd, const char *ptr, size_t len)
 {
+  return 0;
   int res;
   struct fdent *pfd;
 

@@ -57,7 +57,7 @@ typedef unsigned int UHI __attribute__((mode(HI)));
 
 static int initted = 0;
 
-int _SYS_write (int, char *, int);
+int _SYS_write2 (int, char *, int);
 static void
 init_uart0 ()
 {
@@ -90,7 +90,7 @@ tputc (char c)
 int _open_present;
 
 int
-_write(int fd, char *ptr, int len)
+_write2 (int fd, char *ptr, int len)
 {
   int rv = len;
 

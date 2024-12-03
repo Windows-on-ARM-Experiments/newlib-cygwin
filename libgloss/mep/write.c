@@ -13,7 +13,7 @@
  * the express permission of Red Hat, Inc.
  */
 
-extern int __mep_write(int, unsigned char *, int);
+extern int __mep_write2 (int, unsigned char *, int);
 extern void _ioOut(int) __attribute__((weak));
 
 int

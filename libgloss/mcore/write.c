@@ -22,7 +22,7 @@ extern int  outbyte (char x);
  *          open will only return an error.
  */
 int
-_write (int fd,
+_write2 (int fd,
        char *buf,
        int nbytes)
 {

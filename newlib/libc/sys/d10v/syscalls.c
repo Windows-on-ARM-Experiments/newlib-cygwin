@@ -12,7 +12,7 @@
 
 void _exit (int n);	/* in trap.S */
 
-extern int _write (int fd, const void *ptr, size_t len);
+extern int _write2 (int fd, const void *ptr, size_t len);
 
 int errno;
 
@@ -87,7 +87,7 @@ _read (int fd, void *ptr, size_t len)
 
 extern short _write16 (short fd, const void *ptr, short len);
 int
-_write (int fd, const void *ptr, size_t len)
+_write2 (int fd, const void *ptr, size_t len)
 {
   return _write16 ((short)fd, ptr, (short)len);
 }

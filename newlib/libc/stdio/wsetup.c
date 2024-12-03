@@ -41,6 +41,7 @@ __swsetup_r (struct _reent *ptr,
    * If we are not writing, we had better be reading and writing.
    */
 
+
   if ((fp->_flags & __SWR) == 0)
     {
       if ((fp->_flags & __SRW) == 0)
@@ -66,6 +67,7 @@ __swsetup_r (struct _reent *ptr,
    * A string I/O file should not explicitly allocate a buffer
    * unless asprintf is being used.
    */
+
   if (fp->_bf._base == NULL
         && (!(fp->_flags & __SSTR) || (fp->_flags & __SMBF)))
     __smakebuf_r (ptr, fp);

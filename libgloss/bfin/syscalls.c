@@ -71,7 +71,7 @@ _lseek (int file, int ptr, int whence)
 }
 
 int
-_write (int file, char *ptr, int len)
+_write2 (int file, char *ptr, int len)
 {
   int block[3];
 

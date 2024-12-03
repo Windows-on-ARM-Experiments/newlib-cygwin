@@ -80,9 +80,15 @@ free (void *p)
     }
 }
 
+char* mem[1 << 20];
+size_t offset = 0;
+
 extern "C" void *
 malloc (size_t size)
 {
+  offset += size;
+  return mem + offset - size;
+
   void *res;
   if (!use_internal)
     res = user_data->malloc (size);

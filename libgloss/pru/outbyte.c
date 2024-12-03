@@ -28,7 +28,7 @@
 #include <unistd.h>
 #include <_ansi.h>
 
-extern ssize_t _write(int fd, const void *b, size_t count);
+extern ssize_t _write2 (int fd, const void *b, size_t count);
 
 void
 outbyte (char ch)

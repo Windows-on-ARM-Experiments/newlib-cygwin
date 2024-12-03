@@ -65,8 +65,9 @@ fhandler_pipe::set_pipe_non_blocking (bool nonblocking)
 }
 
 int
-fhandler_pipe::init (HANDLE f, DWORD a, mode_t mode, int64_t uniq_id)
+fhandler_pipe::init (HANDLE f, DWORD a, mode_t mode) //, int64_t uniq_id)
 {
+  int64_t uniq_id = 0;
   /* FIXME: Have to clean this up someday
      FIXME: Do we have to check for both !get_win32_name() and
      !*get_win32_name()? */
@@ -196,8 +197,8 @@ fhandler_pipe::open (int flags, mode_t mode)
       __seterrno ();
       goto out;
     }
-  init (nio_hdl, fh->get_access (), mode & O_TEXT ?: O_BINARY,
-	fh->get_plain_ino ());
+  init (nio_hdl, fh->get_access (), mode & O_TEXT ?: O_BINARY); //
+//	fh->get_plain_ino ());
   cfree (fh);
   CloseHandle (proc);
   return 1;
@@ -938,8 +939,8 @@ fhandler_pipe::create (fhandler_pipe *fhs[2], unsigned psize, int mode)
   if ((fhs[1] = (fhandler_pipe *) build_fh_dev (*pipew_dev)) == NULL)
     goto err_delete_fhs0;
   mode |= mode & O_TEXT ?: O_BINARY;
-  fhs[0]->init (r, FILE_CREATE_PIPE_INSTANCE | GENERIC_READ, mode, unique_id);
-  fhs[1]->init (w, FILE_CREATE_PIPE_INSTANCE | GENERIC_WRITE, mode, unique_id);
+  fhs[0]->init (r, FILE_CREATE_PIPE_INSTANCE | GENERIC_READ, mode); //, unique_id);
+  fhs[1]->init (w, FILE_CREATE_PIPE_INSTANCE | GENERIC_WRITE, mode); //, unique_id);
 
   /* For the read side of the pipe, add a mutex.  See raw_read for the
      usage. */
