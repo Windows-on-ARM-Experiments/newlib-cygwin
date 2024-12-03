@@ -63,6 +63,20 @@ TARGET_FILES= \
 	x86_64/wmempcpy.S
 endif
 
+if TARGET_AARCH64
+TARGET_FILES= \
+	aarch64/bcopy.S \
+	aarch64/memchr.S \
+	aarch64/memcpy.c \
+	aarch64/memmove.c \
+	aarch64/mempcpy.S \
+	aarch64/memset.S \
+	aarch64/swab.S \
+	aarch64/wmemcpy.S \
+	aarch64/wmemmove.S \
+	aarch64/wmempcpy.S
+endif
+
 LIB_FILES= \
 	lib/_cygwin_crt0_common.cc \
 	lib/atexit.c \
@@ -599,7 +613,6 @@ $(LDSCRIPT): $(LDSCRIPT).in
 $(NEW_DLL_NAME): $(LDSCRIPT) libdll.a $(VERSION_OFILES) $(LIBSERVER)\
 		  $(newlib_build)/libm.a $(newlib_build)/libc.a
 	$(AM_V_CXXLD)$(CXX) $(CXXFLAGS) \
-	-mno-use-libstdc-wrappers \
 	-Wl,--gc-sections -nostdlib -Wl,-T$(LDSCRIPT) \
 	-Wl,--dynamicbase -static \
 	$${SOURCE_DATE_EPOCH:+-Wl,--no-insert-timestamp} \
@@ -610,7 +623,7 @@ $(NEW_DLL_NAME): $(LDSCRIPT) libdll.a $(VERSION_OFILES) $(LIBSERVER)\
 	$(LIBSERVER) \
 	$(newlib_build)/libm.a \
 	$(newlib_build)/libc.a \
-	-lgcc -lkernel32 -lntdll -Wl,-Map,cygwin.map
+	-lgcc -luser32 -lkernel32 -lonecore -lpdh -lntdll -Wl,-Map,cygwin.map
 	@$(MKDIR_P) ${target_builddir}/winsup/testsuite/testinst/bin/
 	$(AM_V_at)$(INSTALL_PROGRAM) $(NEW_DLL_NAME) ${target_builddir}/winsup/testsuite/testinst/bin/$(DLL_NAME)
 
