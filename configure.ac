@@ -869,7 +869,7 @@ case "${target}" in
   i[[3456789]]86-*-mingw*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
-  x86_64-*-mingw*)
+  aarch64-*-mingw* | x86_64-*-mingw*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   mmix-*-*)
@@ -2381,7 +2381,7 @@ AC_SUBST(DEBUG_PREFIX_CFLAGS_FOR_TARGET)
 # CFLAGS_FOR_TARGET and CXXFLAGS_FOR_TARGET.
 if test "x$CFLAGS_FOR_TARGET" = x; then
   if test "x${is_cross_compiler}" = xyes; then
-    CFLAGS_FOR_TARGET="-g -O2"
+    CFLAGS_FOR_TARGET="-g -Og"
   else
     CFLAGS_FOR_TARGET=$CFLAGS
     case " $CFLAGS " in
@@ -2398,7 +2398,7 @@ AC_SUBST(CFLAGS_FOR_TARGET)
 
 if test "x$CXXFLAGS_FOR_TARGET" = x; then
   if test "x${is_cross_compiler}" = xyes; then
-    CXXFLAGS_FOR_TARGET="-g -O2"
+    CXXFLAGS_FOR_TARGET="-g -Og"
   else
     CXXFLAGS_FOR_TARGET=$CXXFLAGS
     case " $CXXFLAGS " in
@@ -3225,7 +3225,7 @@ case " $target_configdirs " in
 esac
 
 case "$target" in
-  x86_64-*mingw* | *-w64-mingw*)
+  aarch64-*mingw* | x86_64-*mingw* | *-w64-mingw*)
   # MinGW-w64 does not use newlib, nor does it use winsup. It may,
   # however, use a symlink named 'mingw' in ${prefix} .
     FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -L${prefix}/${target}/lib -L${prefix}/mingw/lib -isystem ${prefix}/${target}/include -isystem ${prefix}/mingw/include'
