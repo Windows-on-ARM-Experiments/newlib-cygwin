@@ -1869,7 +1869,7 @@ _cygtls::call_signal_handler ()
 
 	  /* In assembler: Save regs on new stack, move to alternate stack,
 	     call thisfunc, revert stack regs. */
-#ifdef __x86_64__
+#if defined(__x86_64__)
 	  /* Clobbered regs: rcx, rdx, r8, r9, r10, r11, rbp, rsp */
 	  __asm__ ("\n\
 		   movq  %[NEW_SP], %%rax  # Load alt stack into rax	\n\
@@ -1907,6 +1907,8 @@ _cygtls::call_signal_handler ()
 		       [FUNC]	"o" (thisfunc),
 		       [WRAPPER] "o" (altstack_wrapper)
 		   : "memory");
+#elif defined(__aarch64__)
+  // TODO
 #else
 #error unimplemented for this target
 #endif
@@ -2026,7 +2028,7 @@ swapcontext (ucontext_t *oucp, const ucontext_t *ucp)
 /* Trampoline function to set the context to uc_link.  The pointer to the
    address of uc_link is stored in a callee-saved register, referenced by
    _MC_uclinkReg from the C code.  If uc_link is NULL, call exit. */
-#ifdef __x86_64__
+#if defined(__x86_64__)
 /* _MC_uclinkReg == %rbx */
 __asm__ ("				\n\
 	.global	__cont_link_context	\n\
@@ -2047,7 +2049,15 @@ __cont_link_context:			\n\
 	nop				\n\
 	.seh_endproc			\n\
 	");
-
+#elif defined(__aarch64__)
+  // TODO
+  __asm__ ("				\n\
+	.global	__cont_link_context	\n\
+	.seh_proc __cont_link_context	\n\
+__cont_link_context:			\n\
+	.seh_endprologue		\n\
+	.seh_endproc			\n\
+	");
 #else
 #error unimplemented for this target
 #endif
@@ -2094,7 +2104,7 @@ makecontext (ucontext_t *ucp, void (*func) (void), int argc, ...)
        providing pointer values to func without additional porting effort. */
   va_start (ap, argc);
   for (int i = 0; i < argc; ++i)
-#ifdef __x86_64__
+#if defined(__x86_64__)
     switch (i)
       {
       case 0:
@@ -2113,6 +2123,8 @@ makecontext (ucontext_t *ucp, void (*func) (void), int argc, ...)
 	sp[i + 1] = va_arg (ap, uintptr_t);
 	break;
       }
+#elif defined(__aarch64__)
+  // TODO
 #else
 #error unimplemented for this target
 #endif
