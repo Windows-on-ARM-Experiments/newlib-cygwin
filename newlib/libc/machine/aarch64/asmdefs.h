@@ -30,32 +30,18 @@
 #define FEATURE_1_PAC 2
 
 /* Add a NT_GNU_PROPERTY_TYPE_0 note.  */
-#ifdef __ILP32__
 #define GNU_PROPERTY(type, value)	\
-  .section .note.gnu.property, "a";	\
-  .p2align 2;				\
-  .word 4;				\
-  .word 12;				\
-  .word 5;				\
-  .asciz "GNU";				\
-  .word type;				\
-  .word 4;				\
-  .word value;				\
+  .section .note.gnu.property, "a"  SEP \
+  .p2align 3			    SEP \
+  .word 4			    SEP \
+  .word 16			    SEP \
+  .word 5			    SEP \
+  .asciz "GNU"			    SEP \
+  .word type			    SEP \
+  .word 4			    SEP \
+  .word value			    SEP \
+  .word 0			    SEP \
   .text
-#else
-#define GNU_PROPERTY(type, value)	\
-  .section .note.gnu.property, "a";	\
-  .p2align 3;				\
-  .word 4;				\
-  .word 16;				\
-  .word 5;				\
-  .asciz "GNU";				\
-  .word type;				\
-  .word 4;				\
-  .word value;				\
-  .word 0;				\
-  .text
-#endif
 
 /* If set then the GNU Property Note section will be added to
    mark objects to support BTI and PAC-RET.  */
@@ -66,6 +52,16 @@
 #if WANT_GNU_PROPERTY
 /* Add property note with supported features to all asm files.  */
 GNU_PROPERTY (FEATURE_1_AND, FEATURE_1_BTI|FEATURE_1_PAC)
+#endif
+
+#ifdef __ELF__
+#define HIDDEN(name) .hidden name
+#define SYMBOL_SIZE(name) .size name, .-name
+#define SYMBOL_TYPE(name, _type) .type name, _type
+#else
+#define HIDDEN(name)
+#define SYMBOL_SIZE(name)
+#define SYMBOL_TYPE(name, _type)
 #endif
 
 #define ENTRY_ALIGN(name, alignment)	\
