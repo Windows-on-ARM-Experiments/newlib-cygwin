@@ -224,11 +224,12 @@ public: /* Do NOT remove this public: line, it's a marker for gentls_offsets. */
   int call_signal_handler ();
   void remove_wq (DWORD);
   void fixup_after_fork ();
+#if !defined(__aarch64__)
   void lock ()
   {
     while (InterlockedExchange (&stacklock, 1))
       {
-#ifdef __x86_64__
+#if defined(__x86_64__)
 	__asm__ ("pause");
 #else
 #error unimplemented for this target
@@ -236,6 +237,9 @@ public: /* Do NOT remove this public: line, it's a marker for gentls_offsets. */
 	Sleep (0);
       }
   }
+#else
+  void lock ();
+#endif
   void unlock () { stacklock = 0; }
   bool locked () { return !!stacklock; }
   HANDLE get_signal_arrived (bool wait_for_lock = true)
@@ -307,7 +311,11 @@ public:
        address of the _except block to restore the context correctly.
        See comment preceeding myfault_altstack_handler in exception.cc. */
     ret = (DWORD64) _ret;
+#if defined(__x86_64__)
     __asm__ volatile ("movq %%rsp,%0": "=o" (frame));
+#elif defined(__aarch64__)
+    // TODO
+#endif
   }
   ~san () __attribute__ ((always_inline))
   {
