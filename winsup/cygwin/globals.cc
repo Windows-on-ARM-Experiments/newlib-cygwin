@@ -185,6 +185,8 @@ extern "C" {
   };
   int _check_for_executable = true;
 
+  int (*__start_func) (int argc, char *argv[], char **env) = 0;
+
   /* This was a bool initially, just indicating if we're in the forked
      child during fork(2).  However, we need an indicator accessible from
      plain C we can ask if we're in a forked child even after fork(2)

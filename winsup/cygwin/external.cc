@@ -205,7 +205,16 @@ exit_process (UINT status, bool useTerminateProcess)
 
 
 extern "C" uintptr_t
-cygwin_internal (cygwin_getinfo_types t, ...)
+cygwin_internal2 ()
+{
+//  if (t == CW_USER_DATA)
+  return (uintptr_t) &__cygwin_user_data;
+
+  return 0;
+}
+
+extern "C" uintptr_t
+cygwin_internal (cygwin_getinfo_types t, ...) 
 {
   va_list arg;
   uintptr_t res = (uintptr_t) -1;

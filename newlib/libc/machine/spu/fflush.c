@@ -38,6 +38,7 @@ Author: Joel Schopp <jschopp@austin.ibm.com>
 int
 fflush (FILE * fp)
 {
+    return 0;
   int result;
 
   CHECK_INIT(_REENT);

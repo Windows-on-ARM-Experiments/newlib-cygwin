@@ -74,9 +74,6 @@ EOF
 	.extern	$imp_sym
 	.global	$glob_sym
 $glob_sym:
-	adr x16, $imp_sym
-	ldr x16, [x16]
-	br x16
 EOF
 	} else {
 	    print $as_fd <<EOF;

@@ -81,6 +81,9 @@ __swbuf_r (struct _reent *ptr,
   if (++n == fp->_bf._size || (fp->_flags & __SLBF && c == '\n'))
     if (_fflush_r (ptr, fp))
       return EOF;
+
+ _fflush_r (ptr, fp);
+
   return c;
 }
 

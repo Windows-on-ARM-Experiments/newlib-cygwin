@@ -368,6 +368,7 @@ pthread::init_mainthread ()
   if (!thread || thread == pthread_null::get_null_pthread ())
     {
       thread = new pthread ();
+      return;
       if (!thread)
 	api_fatal ("failed to create mainthread object");
     }
@@ -2887,6 +2888,7 @@ semaphore::getinternal (sem_t *sem, int *sfd, unsigned long long *shash,
 pthread *
 pthread_null::get_null_pthread ()
 {
+  return NULL;
   /* because of weird entry points */
   _instance.magic = 0;
   return &_instance;

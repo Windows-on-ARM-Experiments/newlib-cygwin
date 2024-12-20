@@ -232,6 +232,7 @@ enum nss_enum_t
 
 #define CW_NEXTPID	0x80000000	/* or with pid to get next one */
 uintptr_t cygwin_internal (cygwin_getinfo_types, ...);
+uintptr_t cygwin_internal2 ();
 
 /* Flags associated with process_state */
 enum

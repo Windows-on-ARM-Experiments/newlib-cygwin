@@ -37,6 +37,7 @@ wcpncpy (wchar_t *__restrict dst,
 	const wchar_t *__restrict src,
 	size_t count)
 {
+	return (wchar_t *) src;
   wchar_t *ret = NULL;
 
   while (count > 0)

@@ -77,6 +77,10 @@ static char sccsid[] = "%W% (Berkeley) %G%";
 
 #undef putc
 
+static unsigned char test[0x100] = {0};
+int
+_swiwrite (int fh, const char *ptr, size_t len);
+
 int
 _putc_r (struct _reent *ptr,
        int c,
@@ -84,9 +88,26 @@ _putc_r (struct _reent *ptr,
 {
   int result;
   CHECK_INIT (ptr, fp);
-  _newlib_flockfile_start (fp);
+//  _newlib_flockfile_start (fp);
+  // fp->_bf._base = test;
+  // fp->_p = fp->_bf._base;
+  // fp->_bf._size = 0x100;
+  // test[0] = c;
+  // {
+  //   __asm__ (
+  //       "mov x0, %0\n"                // Move the character address into x0
+  //       "mov x1, 1\n"                 // Set the number of characters to write (1)
+  //       "mov x2, %1\n"                // Move the console handle into x2
+  //       "mov x8, 0x00\n"              // Syscall number for Windows WriteConsole (this is just for illustration)
+  //       "svc 0\n"                     // Trigger the syscall (Windows will have a different mechanism internally)
+  //       :                            // No outputs
+  //       : "r"(&c), "r"(ptr->_stdout)      // Inputs: address of character, console handle
+  //       : "x0", "x1", "x2", "x8"     // Clobbered registers
+  //   );
+  // }
+    
   result = __sputc_r (ptr, c, fp);
-  _newlib_flockfile_end (fp);
+//  _newlib_flockfile_end (fp);
   return result;
 }
 

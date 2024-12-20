@@ -1237,7 +1237,7 @@ public:
   int fstatvfs (struct statvfs *buf);
   int fadvise (off_t, off_t, int);
   int fallocate (int, off_t, off_t);
-  int init (HANDLE, DWORD, mode_t, int64_t);
+  int init (HANDLE, DWORD, mode_t);
   static int create (fhandler_pipe *[2], unsigned, int);
   static DWORD create (LPSECURITY_ATTRIBUTES, HANDLE *, HANDLE *, DWORD,
 		       const char *, DWORD, int64_t *unique_id = NULL);

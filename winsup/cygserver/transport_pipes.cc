@@ -70,8 +70,8 @@ transport_layer_pipes::transport_layer_pipes ()
   wchar_t cyg_instkey[18];
 
   wchar_t *p = wcpcpy (_pipe_name, PIPE_NAME_PREFIX);
-  if (!cygwin_internal (CW_GET_INSTKEY, cyg_instkey))
-    wcpcpy (wcpcpy (p, cyg_instkey), PIPE_NAME_SUFFIX);
+  // if (!cygwin_internal (CW_GET_INSTKEY, cyg_instkey))
+  //   wcpcpy (wcpcpy (p, cyg_instkey), PIPE_NAME_SUFFIX);
 }
 
 transport_layer_pipes::~transport_layer_pipes ()

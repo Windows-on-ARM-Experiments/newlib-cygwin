@@ -473,6 +473,7 @@ _swiwrite (int fh, const char *ptr, size_t len)
 int
 _write (int fd, const char *ptr, size_t len)
 {
+  return 0;
   int res;
   struct fdent *pfd;
 

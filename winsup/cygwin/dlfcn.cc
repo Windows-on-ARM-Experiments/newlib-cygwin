@@ -245,9 +245,9 @@ dlopen (const char *name, int flags)
 	}
 
       /* now search the file system */
-      if (!finder.find (pathfinder::
-			exists_and_not_dir (real_filename,
-					    PC_SYM_FOLLOW | PC_POSIX)))
+      // if (!finder.find (pathfinder::
+			// exists_and_not_dir (real_filename,
+			// 		    PC_SYM_FOLLOW | PC_POSIX)))
 	{
 	  /* If nothing worked, create a relative path from the original
 	     incoming filename and let LoadLibrary search for it using the

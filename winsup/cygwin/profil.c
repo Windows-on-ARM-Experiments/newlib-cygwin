@@ -95,7 +95,7 @@ profthr_func (LPVOID arg)
       profthr_byhandle (p->targthr);
 
       /* Record profiling samples for other pthreads, if any. */
-      cygwin_internal (CW_CYGHEAP_PROFTHR_ALL, profthr_byhandle);
+//      cygwin_internal (CW_CYGHEAP_PROFTHR_ALL, profthr_byhandle);
 
 #if 0
       print_prof (p);

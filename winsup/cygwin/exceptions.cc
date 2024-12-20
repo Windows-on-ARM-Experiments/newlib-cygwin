@@ -802,13 +802,13 @@ exception::handle (EXCEPTION_RECORD *e, exception_list *frame, CONTEXT *in,
     }
 
   cygwin_exception exc (framep, in, e);
-  si.si_cyg = (void *) &exc;
+//  si.si_cyg = (void *) &exc;
   /* POSIX requires that for SIGSEGV and SIGBUS, si_addr should be set to the
      address of faulting memory reference.  For SIGILL and SIGFPE these should
      be the address of the faulting instruction.  Other signals are apparently
      undefined so we just set those to the faulting instruction too.  */
-  si.si_addr = (si.si_signo == SIGSEGV || si.si_signo == SIGBUS)
-	       ? (void *) e->ExceptionInformation[1] : (void *) in->_CX_instPtr;
+  //si.si_addr = (si.si_signo == SIGSEGV || si.si_signo == SIGBUS)
+	//       ? (void *) e->ExceptionInformation[1] : (void *) in->_CX_instPtr;
   me.incyg++;
   sig_send (NULL, si, &me);	/* Signal myself */
   if ((NTSTATUS) e->ExceptionCode == STATUS_STACK_OVERFLOW)
@@ -1308,83 +1308,85 @@ signal_exit (int sig, siginfo_t *si, void *)
   debug_printf ("exiting due to signal %d", sig);
   exit_state = ES_SIGNAL_EXIT;
 
-    switch (sig)
-      {
-      case SIGABRT:
-      case SIGBUS:
-      case SIGFPE:
-      case SIGILL:
-      case SIGQUIT:
-      case SIGSEGV:
-      case SIGSYS:
-      case SIGTRAP:
-      case SIGXCPU:
-      case SIGXFSZ:
-	if (try_to_debug ())
-	  break;
+//     switch (sig)
+//       {
+//       case SIGABRT:
+//       case SIGBUS:
+//       case SIGFPE:
+//       case SIGILL:
+//       case SIGQUIT:
+//       case SIGSEGV:
+//       case SIGSYS:
+//       case SIGTRAP:
+//       case SIGXCPU:
+//       case SIGXFSZ:
+// 	if (try_to_debug ())
+// 	  break;
 
-	if (cygheap->rlim_core == 0Ul)
-	  break;
+// 	if (cygheap->rlim_core == 0Ul)
+// 	  break;
 
-	sig |= __WCOREFLAG; /* Set flag in exit status to show that we've "dumped core" */
+// #define __WCOREFLAG 0200
+
+// 	sig |= __WCOREFLAG; /* Set flag in exit status to show that we've "dumped core" */
 
 	/* If core dump size is >1MB, try to invoke dumper to write a
 	   .core file */
-	if (cygheap->rlim_core > 1024*1024)
-	  {
-	    if (exec_prepared_command (dumper_command))
-	      break;
-	    /* If that failed, fall-through to... */
-	  }
+	// if (cygheap->rlim_core > 1024*1024)
+	//   {
+	//     if (exec_prepared_command (dumper_command))
+	//       break;
+	//     /* If that failed, fall-through to... */
+	//   }
 
-	/* Otherwise write a .stackdump */
-	if (si->si_code != SI_USER && si->si_cyg)
-	  {
-	    cygwin_exception *exc = (cygwin_exception *) si->si_cyg;
-	    if ((NTSTATUS) exc->exception_record ()->ExceptionCode
-		== STATUS_STACK_OVERFLOW)
-	      {
-		/* We're handling a stack overflow so we're running low
-		   on stack (surprise!)  The dumpstack method needs lots
-		   of stack for buffers.  So what we do here is to run
-		   dumpstack in another thread with its own stack. */
-		HANDLE thread = CreateThread (&sec_none_nih, 0,
-					      dumpstack_overflow_wrapper,
-					      exc, 0, NULL);
-		if (thread)
-		  {
-		    WaitForSingleObject (thread, INFINITE);
-		    CloseHandle (thread);
-		  }
-	      }
-	    else
-	      ((cygwin_exception *) si->si_cyg)->dumpstack ();
-	  }
-	else
-	  {
-	    CONTEXT c;
-	    c.ContextFlags = CONTEXT_FULL;
-	    RtlCaptureContext (&c);
-	    cygwin_exception exc ((PUINT_PTR) __builtin_frame_address (0), &c);
-	    exc.dumpstack ();
-	  }
-	break;
-      }
+	// /* Otherwise write a .stackdump */
+	// if (si->si_code != SI_USER) // && si->si_cyg)
+	//   {
+	//     cygwin_exception *exc = (cygwin_exception *) si->si_cyg;
+	//     if ((NTSTATUS) exc->exception_record ()->ExceptionCode
+	// 	== STATUS_STACK_OVERFLOW)
+	//       {
+	// 	/* We're handling a stack overflow so we're running low
+	// 	   on stack (surprise!)  The dumpstack method needs lots
+	// 	   of stack for buffers.  So what we do here is to run
+	// 	   dumpstack in another thread with its own stack. */
+	// 	HANDLE thread = CreateThread (&sec_none_nih, 0,
+	// 				      dumpstack_overflow_wrapper,
+	// 				      exc, 0, NULL);
+	// 	if (thread)
+	// 	  {
+	// 	    WaitForSingleObject (thread, INFINITE);
+	// 	    CloseHandle (thread);
+	// 	  }
+	//       }
+	//     else
+	//       ((cygwin_exception *) si->si_cyg)->dumpstack ();
+	//   }
+	// else
+	//   {
+	//     CONTEXT c;
+	//     c.ContextFlags = CONTEXT_FULL;
+	//     RtlCaptureContext (&c);
+	//     cygwin_exception exc ((PUINT_PTR) __builtin_frame_address (0), &c);
+	//     exc.dumpstack ();
+	//   }
+	// break;
+  //     }
 
-  lock_process until_exit (true);
+  // lock_process until_exit (true);
 
-  if (have_execed || exit_state > ES_PROCESS_LOCKED)
-    {
-      debug_printf ("recursive exit?");
-      myself.exit (sig);
-    }
+  // if (have_execed || exit_state > ES_PROCESS_LOCKED)
+  //   {
+  //     debug_printf ("recursive exit?");
+  //     myself.exit (sig);
+  //   }
 
-  /* Starve other threads in a vain attempt to stop them from doing something
-     stupid. */
-  SetThreadPriority (GetCurrentThread (), THREAD_PRIORITY_TIME_CRITICAL);
+  // /* Starve other threads in a vain attempt to stop them from doing something
+  //    stupid. */
+  // SetThreadPriority (GetCurrentThread (), THREAD_PRIORITY_TIME_CRITICAL);
 
-  sigproc_printf ("about to call do_exit (%x)", sig);
-  do_exit (sig);
+  // sigproc_printf ("about to call do_exit (%x)", sig);
+  // do_exit (sig);
 }
 } /* extern "C" */
 
@@ -1531,9 +1533,9 @@ sigpacket::process ()
 
   if (handler == SIG_IGN)
     {
-      if (si.si_code == SI_TIMER)
-	((timer_tracker *) si.si_tid)->disarm_overrun_event ();
-      sigproc_printf ("signal %d ignored", si.si_signo);
+  //     if (si.si_code == SI_TIMER)
+	// ((timer_tracker *) si.si_tid)->disarm_overrun_event ();
+  //     sigproc_printf ("signal %d ignored", si.si_signo);
       goto done;
     }
 
@@ -1556,9 +1558,9 @@ sigpacket::process ()
 	  || si.si_signo == SIGCONT || si.si_signo == SIGWINCH
 	  || si.si_signo == SIGURG)
 	{
-	  if (si.si_code == SI_TIMER)
-	    ((timer_tracker *) si.si_tid)->disarm_overrun_event ();
-	  sigproc_printf ("signal %d default is currently ignore", si.si_signo);
+	  // if (si.si_code == SI_TIMER)
+	  //   ((timer_tracker *) si.si_tid)->disarm_overrun_event ();
+	  // sigproc_printf ("signal %d default is currently ignore", si.si_signo);
 	  goto done;
 	}
 
@@ -1688,9 +1690,9 @@ _cygtls::call_signal_handler ()
 
       if (infodata.si_code == SI_TIMER)
 	{
-	  timer_tracker *tt = (timer_tracker *)
-			      infodata.si_tid;
-	  infodata.si_overrun = tt->disarm_overrun_event ();
+	  // timer_tracker *tt = (timer_tracker *)
+		// 	      infodata.si_tid;
+	  // infodata.si_overrun = tt->disarm_overrun_event ();
 	}
 
       /* Save information locally on stack to pass to handler. */
@@ -1705,11 +1707,11 @@ _cygtls::call_signal_handler ()
 	{
 	  context.uc_link = 0;
 	  context.uc_flags = 0;
-	  if (thissi.si_cyg)
-	    memcpy (&context.uc_mcontext,
-		    ((cygwin_exception *) thissi.si_cyg)->context (),
-		    sizeof (CONTEXT));
-	  else
+	  // if (thissi.si_cyg)
+	  //   memcpy (&context.uc_mcontext,
+		//     ((cygwin_exception *) thissi.si_cyg)->context (),
+		//     sizeof (CONTEXT));
+	  // else
 	    {
 	      /* Software-generated signal.  We're fetching the current
 		 context, unwind to the caller and in case we're called
@@ -1752,9 +1754,9 @@ _cygtls::call_signal_handler ()
 	    }
 	  context.uc_sigmask = context.uc_mcontext.oldmask = this_oldmask;
 
-	  context.uc_mcontext.cr2 = (thissi.si_signo == SIGSEGV
-				     || thissi.si_signo == SIGBUS)
-				    ? (uintptr_t) thissi.si_addr : 0;
+	  // context.uc_mcontext.cr2 = (thissi.si_signo == SIGSEGV
+		// 		     || thissi.si_signo == SIGBUS)
+		// 		    ? (uintptr_t) thissi.si_addr : 0;
 
 	  thiscontext = &context;
 	  context_copy = context;
@@ -1868,27 +1870,27 @@ _cygtls::call_signal_handler ()
 void
 _cygtls::signal_debugger (siginfo_t& si)
 {
-  HANDLE th;
-  /* If si.si_cyg is set then the signal was already sent to the debugger. */
-  if (isinitialized () && !si.si_cyg && (th = (HANDLE) *this)
-      && being_debugged () && SuspendThread (th) >= 0)
-    {
-      CONTEXT c;
-      c.ContextFlags = CONTEXT_FULL;
-      if (GetThreadContext (th, &c))
-	{
-	  if (incyg)
-	    c._CX_instPtr = retaddr ();
-	  memcpy (&context.uc_mcontext, &c, sizeof (CONTEXT));
-	  /* Enough space for 64 bit addresses */
-	  char sigmsg[2 * sizeof (_CYGWIN_SIGNAL_STRING
-				  " ffffffff ffffffffffffffff")];
-	  __small_sprintf (sigmsg, _CYGWIN_SIGNAL_STRING " %d %y %p",
-			   si.si_signo, thread_id, &context.uc_mcontext);
-	  OutputDebugString (sigmsg);
-	}
-      ResumeThread (th);
-    }
+  // HANDLE th;
+  // /* If si.si_cyg is set then the signal was already sent to the debugger. */
+  // if (isinitialized () && !si.si_cyg && (th = (HANDLE) *this)
+  //     && being_debugged () && SuspendThread (th) >= 0)
+  //   {
+  //     CONTEXT c;
+  //     c.ContextFlags = CONTEXT_FULL;
+  //     if (GetThreadContext (th, &c))
+	// {
+	//   if (incyg)
+	//     c._CX_instPtr = retaddr ();
+	//   memcpy (&context.uc_mcontext, &c, sizeof (CONTEXT));
+	//   /* Enough space for 64 bit addresses */
+	//   char sigmsg[2 * sizeof (_CYGWIN_SIGNAL_STRING
+	// 			  " ffffffff ffffffffffffffff")];
+	//   __small_sprintf (sigmsg, _CYGWIN_SIGNAL_STRING " %d %y %p",
+	// 		   si.si_signo, thread_id, &context.uc_mcontext);
+	//   OutputDebugString (sigmsg);
+	// }
+  //     ResumeThread (th);
+  //   }
 }
 
 extern "C" int

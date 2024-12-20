@@ -90,8 +90,8 @@ __swrite (struct _reent *ptr,
   if (fp->_flags & __SCLE)
     oldmode = setmode (fp->_file, O_BINARY);
 #endif
-
   w = _write_r (ptr, fp->_file, buf, n);
+  return 0;
 
 #ifdef __SCLE
   if (oldmode)

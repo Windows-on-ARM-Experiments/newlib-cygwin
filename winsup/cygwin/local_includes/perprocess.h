@@ -14,6 +14,8 @@ extern "C" {
 
 /* Pointer into application's static data */
 extern struct per_process __cygwin_user_data;
+extern int (*__start_func) (int argc, char *argv[], char **env);
+
 #define user_data (&__cygwin_user_data)
 
 /* We use the following to test that sizeof hasn't changed.  When adding

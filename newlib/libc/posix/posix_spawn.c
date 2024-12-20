@@ -175,7 +175,7 @@ process_spawnattr(const posix_spawnattr_t sa)
 	}
 
 	/* Set scheduler policy */
-	if (sa->sa_flags & POSIX_SPAWN_SETSCHEDULER) {
+/*	if (sa->sa_flags & POSIX_SPAWN_SETSCHEDULER) {
 		if (sched_setscheduler(0, sa->sa_schedpolicy,
 		    &sa->sa_schedparam) != 0)
 			return (errno);
@@ -183,7 +183,7 @@ process_spawnattr(const posix_spawnattr_t sa)
 		if (sched_setparam(0, &sa->sa_schedparam) != 0)
 			return (errno);
 	}
-
+*/
 	/* Reset user ID's */
 	if (sa->sa_flags & POSIX_SPAWN_RESETIDS) {
 		if (setegid(getgid()) != 0)

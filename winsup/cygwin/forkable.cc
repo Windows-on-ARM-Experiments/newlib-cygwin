@@ -862,6 +862,7 @@ dll_list::cleanup_forkables ()
 {
   if (!forkables_supported ())
     return;
+  return;
 
   bool locked = close_mutex ();
 
