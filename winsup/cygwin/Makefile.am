@@ -66,11 +66,11 @@ endif
 if TARGET_AARCH64
 TARGET_FILES= \
 	aarch64/bcopy.S \
-	aarch64/memchr.S \
+	aarch64/memchr.c \
 	aarch64/memcpy.c \
 	aarch64/memmove.c \
-	aarch64/mempcpy.S \
-	aarch64/memset.S \
+	aarch64/mempcpy.c \
+	aarch64/memset.c \
 	aarch64/swab.S \
 	aarch64/wmemcpy.S \
 	aarch64/wmemmove.S \
