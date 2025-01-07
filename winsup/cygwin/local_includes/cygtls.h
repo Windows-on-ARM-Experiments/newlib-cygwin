@@ -225,22 +225,21 @@ public: /* Do NOT remove this public: line, it's a marker for gentls_offsets. */
   int call_signal_handler ();
   void remove_wq (DWORD);
   void fixup_after_fork ();
-#if !defined(__aarch64__)
   void lock ()
   {
     while (InterlockedExchange (&stacklock, 1))
       {
 #if defined(__x86_64__)
 	__asm__ ("pause");
+#elif defined(__aarch64__)
+	// TODO: Validate this.
+	__asm__ ("yield");
 #else
 #error unimplemented for this target
 #endif
 	Sleep (0);
       }
   }
-#else
-  void lock ();
-#endif
   void unlock () { stacklock = 0; }
   bool locked () { return !!stacklock; }
   HANDLE get_signal_arrived (bool wait_for_lock = true)
