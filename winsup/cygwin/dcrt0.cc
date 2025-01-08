@@ -820,7 +820,7 @@ dll_crt0_1 (void *)
      have overridden malloc.  We only know about that at this stage,
      unfortunately. */
   malloc_init ();
-  // user_shared->initialize ();
+  user_shared->initialize ();
 
 #ifdef CYGHEAP_DEBUG
   int i = 0;
@@ -846,8 +846,8 @@ dll_crt0_1 (void *)
      otherwise it is reinitalized in fixup_after_fork */
   if (__in_forkee != FORKING)
     {
-//      pthread::init_mainthread ();
-      _pei386_runtime_relocator (user_data);
+      pthread::init_mainthread ();
+      //_pei386_runtime_relocator (user_data);
     }
 
 #ifdef DEBUGGING
@@ -883,7 +883,7 @@ dll_crt0_1 (void *)
   fork_init ();
   }
 #endif
-//  pinfo_init (envp, envc);
+  pinfo_init (envp, envc);
   strace.dll_info ();
 
   /* Allocate cygheap->fdtab */
@@ -892,12 +892,12 @@ dll_crt0_1 (void *)
   /* Set internal locale to the environment settings. */
   initial_setlocale ();
 
-  // uinfo_init ();	/* initialize user info */
+  uinfo_init ();	/* initialize user info */
 
   /* Connect to tty. */
   tty::init_session ();
 
-  if (false && !__argc)
+  if (!__argc)
     {
       PWCHAR wline = GetCommandLineW ();
       size_t size = sys_wcstombs_no_path (NULL, 0, wline) + 1;
@@ -1001,7 +1001,6 @@ dll_crt0_1 (void *)
       sig_dispatch_pending (false);
       _my_tls.call_signal_handler ();
       _my_tls.incyg--;	/* Not in Cygwin anymore */
-      ExitProcess (user_data->main(__argc, 0, environ));
       cygwin_exit (user_data->main (__argc, newargv, environ));
     }
   __asm__ ("				\n\

@@ -395,7 +395,7 @@ pthread::self ()
   if (!thread)
     {
       thread = pthread_null::get_null_pthread ();
-      thread->set_tls_self_pointer ();
+	thread->set_tls_self_pointer ();
     }
   return thread;
 }

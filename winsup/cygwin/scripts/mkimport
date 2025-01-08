@@ -68,7 +68,6 @@ $glob_sym:
 	jmp	*$imp_sym(%rip)
 EOF
 	} elsif ($is_aarch64) {
-	    # TODO
 	    print $as_fd <<EOF;
 	.text
 	.extern	$imp_sym

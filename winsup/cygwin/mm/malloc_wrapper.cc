@@ -80,15 +80,9 @@ free (void *p)
     }
 }
 
-char mem[1 << 20];
-size_t offset = 0;
-
 extern "C" void *
 malloc (size_t size)
 {
-  offset += size;
-  return mem + offset - size;
-
   void *res;
   if (!use_internal)
     res = user_data->malloc (size);
@@ -327,6 +321,7 @@ malloc_init ()
       use_internal = user_data->malloc == malloc
 		     || import_address ((void *) user_data->malloc)
 			== &_sigfe_malloc;
+      use_internal = true;
       malloc_printf ("using %s malloc", use_internal ? "internal" : "external");
       internal_malloc_determined = true;
     }
