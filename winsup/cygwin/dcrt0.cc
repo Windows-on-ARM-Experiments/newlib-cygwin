@@ -1029,7 +1029,6 @@ _dll_crt0 ()
      reserved for pthread stacks.  This allows a reproducible stack space
      under our own control and avoids collision with the OS. */
 #if !defined(__aarch64__)
-  if (!)
     {
       if (__in_forkee != FORKING)
 	{

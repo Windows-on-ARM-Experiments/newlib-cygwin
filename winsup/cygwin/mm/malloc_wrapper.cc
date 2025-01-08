@@ -80,7 +80,7 @@ free (void *p)
     }
 }
 
-char* mem[1 << 20];
+char mem[1 << 20];
 size_t offset = 0;
 
 extern "C" void *
