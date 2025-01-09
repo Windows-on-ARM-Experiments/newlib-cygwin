@@ -1355,7 +1355,7 @@ write (int fd, const void *ptr, size_t len)
 //   __try
 //     {
 
-	WriteConsoleA(GetStdHandle(STD_OUTPUT_HANDLE), ptr, len, NULL, NULL);
+	WriteFile(GetStdHandle(STD_OUTPUT_HANDLE), ptr, len, NULL, NULL);
 	return len;
       cygheap_fdget cfd (fd);
 
