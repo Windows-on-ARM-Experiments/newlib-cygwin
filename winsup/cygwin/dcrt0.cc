@@ -820,7 +820,7 @@ dll_crt0_1 (void *)
      have overridden malloc.  We only know about that at this stage,
      unfortunately. */
   malloc_init ();
-  user_shared->initialize ();
+  // user_shared->initialize ();
 
 #ifdef CYGHEAP_DEBUG
   int i = 0;
@@ -846,7 +846,7 @@ dll_crt0_1 (void *)
      otherwise it is reinitalized in fixup_after_fork */
   if (__in_forkee != FORKING)
     {
-      pthread::init_mainthread ();
+//      pthread::init_mainthread ();
       _pei386_runtime_relocator (user_data);
     }
 
@@ -883,7 +883,7 @@ dll_crt0_1 (void *)
   fork_init ();
   }
 #endif
-  pinfo_init (envp, envc);
+//  pinfo_init (envp, envc);
   strace.dll_info ();
 
   /* Allocate cygheap->fdtab */
@@ -892,12 +892,12 @@ dll_crt0_1 (void *)
   /* Set internal locale to the environment settings. */
   initial_setlocale ();
 
-  uinfo_init ();	/* initialize user info */
+  // uinfo_init ();	/* initialize user info */
 
   /* Connect to tty. */
   tty::init_session ();
 
-  if (!__argc)
+  if (false && !__argc)
     {
       PWCHAR wline = GetCommandLineW ();
       size_t size = sys_wcstombs_no_path (NULL, 0, wline) + 1;
@@ -930,11 +930,12 @@ dll_crt0_1 (void *)
 
   /* Set up program_invocation_name and program_invocation_short_name.
      __progname is an export alias for program_invocation_short_name. */
-  program_invocation_name = __argv[0];
-  if (__argv[0] && (program_invocation_short_name = strrchr (__argv[0], '/')))
-    ++program_invocation_short_name;
-  else
-    program_invocation_short_name = __argv[0];
+//  program_invocation_name = __argv[0];
+  // if (__argv[0] && (program_invocation_short_name = strrchr (__argv[0], '/')))
+  //   ++program_invocation_short_name;
+  // else
+  //   program_invocation_short_name = __argv[0];
+
   if (program_invocation_short_name)
     {
       char *cp = strchr (program_invocation_short_name, '\0') - 4;
@@ -992,14 +993,15 @@ dll_crt0_1 (void *)
 	 original argv and potentially affect output of /proc/self/cmdline.
 	 We opt for the latter here because it's the lesser evil. */
       char **newargv = (char **) malloc ((__argc + 1) * sizeof (char *));
-      if (newargv)
-	memcpy (newargv, __argv, (__argc + 1) * sizeof (char *));
-      else
-	newargv = __argv;
+  //     if (newargv)
+	// memcpy (newargv, __argv, (__argc + 1) * sizeof (char *));
+  //     else
+	// newargv = __argv;
       /* Handle any signals which may have arrived */
       sig_dispatch_pending (false);
       _my_tls.call_signal_handler ();
       _my_tls.incyg--;	/* Not in Cygwin anymore */
+      ExitProcess (user_data->main(__argc, 0, environ));
       cygwin_exit (user_data->main (__argc, newargv, environ));
     }
   __asm__ ("				\n\

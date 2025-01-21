@@ -1352,6 +1352,8 @@ write (int fd, const void *ptr, size_t len)
   ssize_t res = -1;
 
   pthread_testcancel ();
+	WriteFile(GetStdHandle(STD_OUTPUT_HANDLE), ptr, len, NULL, NULL);
+	return len;
 
   __try
     {

@@ -16,6 +16,12 @@ extern void _dll_crt0 ()
 void
 cygwin_crt0 (MainFunc f)
 {
+  static int init = 0;
+  if (init)
+    return;
+
+  init = 1;
+
   _cygwin_crt0_common (f, NULL);
   _dll_crt0 ();	/* Jump into the dll, never to return */
 }

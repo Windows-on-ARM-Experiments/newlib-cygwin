@@ -182,7 +182,7 @@ dtable::stdio_init ()
 	}
     }
 
-  init_std_file_from_handle (1, out);
+  // init_std_file_from_handle (1, out);
   init_std_file_from_handle (2, err);
 }
 

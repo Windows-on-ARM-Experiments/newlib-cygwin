@@ -274,9 +274,9 @@ _fflush_r (struct _reent *ptr,
   if (!fp->_flags)
     return 0;
 
-  _newlib_flockfile_start (fp);
+//  _newlib_flockfile_start (fp);
   ret = __sflush_r (ptr, fp);
-  _newlib_flockfile_end (fp);
+//  _newlib_flockfile_end (fp);
   return ret;
 }
 

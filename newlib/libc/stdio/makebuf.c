@@ -49,8 +49,9 @@ __smakebuf_r (struct _reent *ptr,
       fp->_bf._size = 1;
       return;
     }
-  flags = __swhatbuf_r (ptr, fp, &size, &couldbetty);
-  if ((p = _malloc_r (ptr, size)) == NULL)
+//  flags = __swhatbuf_r (ptr, fp, &size, &couldbetty);
+
+  if ((p = _malloc_r (ptr, 1000)) == NULL)
     {
       if (!(fp->_flags & __SSTR))
 	{
