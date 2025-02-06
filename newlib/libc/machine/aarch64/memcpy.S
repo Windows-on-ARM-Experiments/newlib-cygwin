@@ -56,6 +56,7 @@
    The loop tail is handled by always copying 64 bytes from the end.
 */
 
+ENTRY_ALIAS (memmove)
 ENTRY (memcpy)
 	add	srcend, src, count
 	add	dstend, dstin, count
