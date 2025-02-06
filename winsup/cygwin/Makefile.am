@@ -63,18 +63,18 @@ TARGET_FILES= \
 	x86_64/wmempcpy.S
 endif
 
+NEWLIB_STRING_DIR= ../../newlib/libc/string
+
 if TARGET_AARCH64
 TARGET_FILES= \
-	aarch64/bcopy.S \
-	aarch64/memchr.S \
-	aarch64/memcpy.c \
-	aarch64/memmove.c \
-	aarch64/mempcpy.S \
-	aarch64/memset.S \
-	aarch64/swab.S \
-	aarch64/wmemcpy.S \
-	aarch64/wmemmove.S \
-	aarch64/wmempcpy.S
+	$(NEWLIB_STRING_DIR)/bcopy.c \
+	$(NEWLIB_STRING_DIR)/memchr.c \
+	$(NEWLIB_STRING_DIR)/mempcpy.c \
+	$(NEWLIB_STRING_DIR)/memset.c \
+	$(NEWLIB_STRING_DIR)/swab.c \
+	$(NEWLIB_STRING_DIR)/wmemcpy.c \
+	$(NEWLIB_STRING_DIR)/wmemmove.c \
+	$(NEWLIB_STRING_DIR)/wmempcpy.c
 endif
 
 LIB_FILES= \
