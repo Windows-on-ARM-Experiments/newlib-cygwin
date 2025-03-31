@@ -590,12 +590,15 @@ EOF
 	.seh_proc sigsetjmp
 sigsetjmp:
 	.seh_endprologue
+	mov x0, 0
+	ret
 	.seh_endproc
 
 	.globl  setjmp
 	.seh_proc setjmp
 setjmp:
 	.seh_endprologue
+	mov x0, 0
 	ret
 	.seh_endproc
 
@@ -603,6 +606,7 @@ setjmp:
 	.seh_proc siglongjmp
 siglongjmp:
 	.seh_endprologue
+	ret
 	.seh_endproc
 
 	.globl  longjmp
