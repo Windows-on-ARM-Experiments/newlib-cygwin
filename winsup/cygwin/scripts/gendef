@@ -407,7 +407,68 @@ _ZN7_cygtls3popEv:
 
 	.seh_proc stabilize_sig_stack
 stabilize_sig_stack:
+	// prologue
+	stp	fp, lr, [sp, #-0x10]!		// save registers
+	.seh_save_fplr_x 0x10
+	sub	sp, sp, #0x20			// allocate 32 bytes on stack
+	.seh_stackalloc 0x20
 	.seh_endprologue
+
+	ldr	x10, [x18, #0x8]		// get thread local storage pointer
+1:
+	// try to acquire the lock
+	mov	w9, #1				// set up value for atomic exchange
+	ldr	x11, =_cygtls.stacklock		// load the symbol address/offset
+	add	x11, x10, x11			// calculate final address
+	ldaxr	w12, [x11]			// load with acquire semantics
+	stlxr	w13, w9, [x11]			// store with release semantics
+	cbnz	w13, 1b				// if store failed, retry
+	cbnz	w12, 1b				// if lock was already held, retry
+
+	// lock acquired
+	ldr	x11, =_cygtls.incyg
+	add	x11, x10, x11
+	ldr	w9, [x11]
+	add	w9, w9, #1			// increment incyg counter
+	str	w9, [x11]
+
+	ldr	x11, =_cygtls.current_sig
+	add	x11, x10, x11
+	ldr	w9, [x11]
+	cbz	w9, 3f				// if no current signal, jump to cleanup
+
+	// release lock before calling signal handler
+	mov	w9, #0
+	ldr	x11, =_cygtls.stacklock
+	add	x11, x10, x11
+	mov	w9, #0
+	str	w9, [x11]
+
+	// prepare arguments for call_signal_handler
+	mov	x0, x10				// set TLS as first argument
+	adrp	x1, _cygtls.start_offset
+	add	x0, x0, x1
+	bl	_ZN7_cygtls19call_signal_handlerEv
+
+	// decrement incyg counter
+	ldr	x11, =_cygtls.incyg
+	add	x11, x10, x1
+	ldr	w9, [x11]
+	sub	w9, w9, #1
+	str	w9, [x11]
+
+	b	1b				// try to reacquire lock
+3:	// no signal to handle, cleanup
+	ldr	x11, =_cygtls.incyg
+	add	x11, x10, x11
+	ldr	w9, [x11]
+	sub	w9, w9, #1			// decrement incyg counter
+	str	w9, [x11]
+
+	// epilogue
+	add	sp, sp, #0x20			// restore stack
+	mov	x1, x10				// return TLS address in x0 (return value)
+	ldp	fp, lr, [sp], #0x10		// restore saved registers
 	ret
 	.seh_endproc
 EOF
