@@ -376,8 +376,8 @@ _sigfe_maybe:					# stack is aligned on entry!
 	.seh_proc _sigfe
 _sigfe:						# stack is aligned on entry!
 	.seh_endprologue
-	ldr x9, [sp], #16
-	br x9
+	ldr	x9, [sp], #0x10
+	br	x9
 	.seh_endproc
 
 	.global _sigbe
@@ -515,7 +515,7 @@ longjmp:
 	movq	%r10,_cygtls.stackptr(%r11)	# restore
 	decl	_cygtls.stacklock(%r11)		# release lock
 	xorl	%r10d,%r10d
-	movl	%r10d,_cygtls.incyg(%r11)		# we're not in cygwin anymore
+	movl	%r10d,_cygtls.incyg(%r11)	# we're not in cygwin anymore
 	movq	0x8(%rcx),%rbx
 	movq	0x10(%rcx),%rsp
 	movq	0x18(%rcx),%rbp
@@ -555,8 +555,10 @@ EOF
 	.globl	sigsetjmp
 	.seh_proc sigsetjmp
 sigsetjmp:
+	// prologue
 	.seh_endprologue
-	mov x0, 0
+
+	mov	x0, 0
 	ret
 	.seh_endproc
 
@@ -564,7 +566,46 @@ sigsetjmp:
 	.seh_proc setjmp
 setjmp:
 	.seh_endprologue
-	mov x0, 0
+
+	// save callee-saved registers from jump buffer
+	stp	x19, x20, [x0, #0x08]		// save x19 and x20
+	stp	x21, x22, [x0, #0x18]		// save x21 and x22
+	stp	x23, x24, [x0, #0x28]		// save x23 and x24
+	stp	x25, x26, [x0, #0x38]		// save x25 and x26
+	stp	x27, x28, [x0, #0x48]		// save x27 and x28
+	str	x29, [x0, #0x58]		// save x29 (frame pointer)
+	str	x30, [x0, #0x60] 		// save x30 (link register)
+	mov	x1, sp				// get the current stack pointer
+	str	x1, [x0, #0x68]			// save SP
+	mrs	x1, fpsr			// get floating-point status register
+	str	x1, [x0, #0x70]			// save FPSR
+	mrs	x1, fpcr			// get floating-point control register
+	str	x1, [x0, #0x78]			// save FPCR
+
+	// save SIMD registers (q0-q7)
+	stp	q0, q1, [x0, #0x80]
+	stp	q2, q3, [x0, #0xA0]
+	stp	q4, q5, [x0, #0xC0]
+	stp	q6, q7, [x0, #0xE0]
+
+	bl	stabilize_sig_stack		// call stabilize_sig_stack (returns TLS in x1)
+
+	// store the stack pointer to ...
+	ldr	x2, =_cygtls.stackptr
+	add	x2, x1, x2
+	ldr	x2, [x2]
+	// TODO: Save the value somewhere.
+
+	// decrement the stack lock
+	ldr	x2, =_cygtls.stacklock
+	add	x2, x1, x2
+	ldr	w2, [x2]
+	sub	w2, w2, #1
+	str	w2, [x2]
+
+	mov	w0, #0				// return 0
+
+	// epilogue
 	ret
 	.seh_endproc
 
