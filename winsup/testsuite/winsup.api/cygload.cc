@@ -82,6 +82,11 @@ cygwin::padding::padding ()
     "movl %%fs:4, %0"
     :"=r"(stackbase)
     );
+# elif __aarch64__
+  __asm__ (
+    "ldr %0, [x18, #0x8]"
+   :"=r" (stackbase)
+   );
 # else
 #  error Unknown architecture
 # endif
