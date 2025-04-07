@@ -28,7 +28,7 @@ __MINGW_USYMBOL(log2l):
 	fnstsw
 	fld	%st		// x : x : 1
 	sahf
-	jc	3f		// in case x is NaN or ±Inf
+	jc	3f		// in case x is NaN or ï¿½Inf
 4:	fsub	%st(2), %st	// x-1 : x : 1
 	fld	%st		// x-1 : x-1 : x : 1
 	fabs			// |x-1| : x-1 : x : 1
@@ -50,7 +50,7 @@ __MINGW_USYMBOL(log2l):
 	fstpt	(%rcx)
 	ret
 
-3:	jp	4b		// in case x is ±Inf
+3:	jp	4b		// in case x is ï¿½Inf
 	fstp	%st(1)
 	fstp	%st(1)
 	movq	%rcx,%rax
@@ -64,7 +64,7 @@ __MINGW_USYMBOL(log2l):
 	fnstsw
 	fld	%st		// x : x : 1
 	sahf
-	jc	3f		// in case x is NaN or ±Inf
+	jc	3f		// in case x is NaN or ï¿½Inf
 4:	fsub	%st(2), %st	// x-1 : x : 1
 	fld	%st		// x-1 : x-1 : x : 1
 	fabs			// |x-1| : x-1 : x : 1
@@ -80,12 +80,16 @@ __MINGW_USYMBOL(log2l):
 	fyl2x			// log(x)
 	ret
 
-3:	jp	4b		// in case x is ±Inf
+3:	jp	4b		// in case x is ï¿½Inf
 	fstp	%st(1)
 	fstp	%st(1)
 	ret
-#elif (__aarch64__)
-	// TODO
+#elif defined(__aarch64__)
+	// TODO: Complete AArch64 assembly implementation
+	stp q0, q1, [sp, -32]!
+	bl log2
+	ldp q0, q1, [sp], 32
+	ret
 #else
 	.error "Not supported on your platform yet"
 #endif
