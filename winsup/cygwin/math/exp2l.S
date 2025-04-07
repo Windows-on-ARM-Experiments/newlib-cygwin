@@ -15,7 +15,7 @@
 .globl __MINGW_USYMBOL(exp2l)
 	.def	__MINGW_USYMBOL(exp2l);	.scl	2;	.type	32;	.endef
 __MINGW_USYMBOL(exp2l):
-#ifdef __x86_64__
+#if defined(__x86_64__)
 	fldt	(%rdx)
 	fxam				/* Is NaN or +-Inf?  */
 	fstsw	%ax
@@ -53,7 +53,7 @@ __MINGW_USYMBOL(exp2l):
 	movq	$0,8(%rcx)
 	fstpt	(%rcx)
 	ret
-#elif __i386__
+#elif defined(__i386__)
 	fldt	4(%esp)
 /* I added the following ugly construct because exp(+-Inf) resulted
    in NaN.  The ugliness results from the bright minds at Intel.
@@ -89,6 +89,12 @@ __MINGW_USYMBOL(exp2l):
 	fstp	%st
 	fldz				/* Set result to 0.  */
 2:	ret
+#elif defined(__aarch64__)
+	// TODO: Complete AArch64 assembly implementation
+	stp q0, q0, [sp, -16]!
+	bl exp2
+	ldp q0, q0, [sp], 16
+	ret
 #else
-  // TODO
+	.error "Not supported on your architecture yet"
 #endif
