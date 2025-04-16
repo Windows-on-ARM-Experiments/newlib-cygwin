@@ -22,7 +22,8 @@ _BEGIN_STD_C
 #endif
 
 #if defined(__aarch64__)
-#define _JBLEN 22
+// TODO: Figure out what registers needs to be saved and adjust the size accordingly.
+#define _JBLEN 24
 #define _JBTYPE long long
 #endif
 
