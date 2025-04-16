@@ -408,10 +408,10 @@ _ZN7_cygtls3popEv:
 	.seh_proc stabilize_sig_stack
 stabilize_sig_stack:
 	// prologue
-	stp	fp, lr, [sp, #-0x10]!		// save registers
-	.seh_save_fplr_x 0x10
-	sub	sp, sp, #0x20			// allocate 32 bytes on stack
-	.seh_stackalloc 0x20
+	stp	fp, lr, [sp, #-0x10]!		// save FP and LR registers
+	stp	x9, x10, [sp, #-0x10]!		// save x9 and x10 registers used next
+	stp	x11, x12, [sp, #-0x10]!		// save x11 and x12 registers used next
+	stp	x13, x14, [sp, #-0x10]!		// save x13 register used next and x14 just to keep stack orientation and alignment
 	.seh_endprologue
 
 	ldr	x10, [x18, #0x8]		// get thread local storage pointer
@@ -465,10 +465,13 @@ stabilize_sig_stack:
 	sub	w9, w9, #1			// decrement incyg counter
 	str	w9, [x11]
 
+	mov	x0, x10				// return TLS address in x0 (return value)
+
 	// epilogue
-	add	sp, sp, #0x20			// restore stack
-	mov	x1, x10				// return TLS address in x0 (return value)
-	ldp	fp, lr, [sp], #0x10		// restore saved registers
+	ldp	x13, x14, [sp], #0x10
+	ldp	x11, x12, [sp], #0x10
+	ldp	x9, x10, [sp], #0x10
+	ldp	fp, lr, [sp], #0x10
 	ret
 	.seh_endproc
 EOF
