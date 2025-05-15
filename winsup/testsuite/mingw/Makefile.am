@@ -27,7 +27,5 @@ cygload_LDFLAGS=-static -Wl,-e,cygloadCRTStartup
 
 winchild_SOURCES = \
 	../winsup.api/posix_spawn/winchild.c
-if TARGET_X86_64
 winchild_LDFLAGS=-municode
-endif
 winchild_LDADD=-lntdll
