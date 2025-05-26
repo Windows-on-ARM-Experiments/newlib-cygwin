@@ -100,7 +100,22 @@ pthread_wrapper (PVOID arg)
 	   : : [WRAPPER_ARG] "o" (wrapper_arg),
 	       [CYGTLS] "i" (__CYGTLS_PADSIZE__));
 #elif defined(__aarch64__)
-  // TODO
+  __asm__ __volatile__ (
+      "\n\
+    mov     x1, %[WRAPPER_ARG]  // Load &wrapper_arg into x1        \n\
+    ldr     x12, [x1]           // Load thread func into x12        \n\
+    ldr     x13, [x1, #8]       // Load thread arg into x13         \n\
+    ldr     x2, [x1, #24]       // Load stackbase into x2           \n\
+    mov     x3, %[CYGTLS]       // Load __CYGTLS_PADSIZE__ into x3  \n\
+    sub     sp, x2, x3          // sp = stackbase - __CYGTLS_PADSIZE__\n\
+    sub     sp, sp, #32         // Reserve 32 bytes (shadow space)  \n\
+    mov     x29, xzr            // Clear frame pointer (x29 = 0)    \n\
+    mov     x0, x13             // Move thread arg into x0 (1st arg)\n\
+    blr     x12                 // Call thread func                 \n\
+    "
+      :
+      : [WRAPPER_ARG] "r"(&wrapper_arg), [CYGTLS] "i"(__CYGTLS_PADSIZE__)
+      : "x0", "x1", "x2", "x3", "x12", "x13", "x29", "memory");
 #else
 #error unimplemented for this target
 #endif
