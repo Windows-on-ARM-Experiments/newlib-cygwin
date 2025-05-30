@@ -136,6 +136,9 @@ AC_CONFIG_FILES([
     Makefile
     cygwin/Makefile
     cygserver/Makefile
+    doc/Makefile
+    utils/Makefile
+    utils/mingw/Makefile
     testsuite/Makefile
     testsuite/mingw/Makefile
 ])
