@@ -90,6 +90,72 @@ jobs:
         scp -pr build/*/winsup/doc/{cygwin-api,cygwin-ug-net,faq} cygwin-admin@cygwin.com:/sourceware/www/sourceware/htdocs/cygwin/doc/${DEST}/
       if: env.HAS_SSH_KEY == 'true'
 
+  ubuntu-build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-pc-cygwin
+            runner: ubuntu-24.04
+          - target: aarch64-pc-cygwin
+            runner: ubuntu-24.04-arm
+
+    runs-on: ${{ matrix.runner }}
+    name: Ubuntu cross ${{ matrix.target }}
+
+    env:
+      HAS_SSH_KEY: ${{ secrets.SSH_KEY != '' }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      # install build tools
+      - name: Install build tools
+        run: |
+          apt-get install -y autoconf automake gawk make patch perl
+
+      # build
+      - name: Configure, build and install
+        run: |
+          mkdir build install
+          (cd winsup && ./autogen.sh)
+          (cd build && ../configure --target=${{ matrix.target }} --prefix=$(realpath $(pwd)/../install) )
+          make -C build
+          make -C build/*/newlib info man
+          make -C build install
+          make -C build/*/newlib install-info install-man
+
+      # deploy documentation
+      - name: Deploy documentation
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        run: |
+          # pushes to main are deployed as preview
+          # pushes to cygwin-n.n.n (but not 'cygwin-n.n.n.dev') tags are deployed as stable
+          # other references are ignored by this step
+          case "${{ github.ref }}" in
+            refs/heads/main)
+              DEST='preview'
+              ;;
+            refs/tags/cygwin-[0-9.]*)
+              DEST='stable'
+              ;;
+            *)
+              exit 0
+              ;;
+          esac
+          # unfuck github fuckery of HOME in a container
+          unset HOME
+          # add the hosts public key to known_hosts
+          mkdir -p ~/.ssh/
+          echo "cygwin.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKoejTnTCbXaIIMYfbX7t4tYUOQ2bTxZC3e/td3BageF" >> ~/.ssh/known_hosts
+          # load the key (restricted to scp only) into ssh-agent
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+          ssh-add - <<< "${{ secrets.SSH_KEY }}"
+          # 'make install' doesn't install faq, so instead just deploy from build directory
+          scp -pr build/*/winsup/doc/{cygwin-api,cygwin-ug-net,faq} cygwin-admin@cygwin.com:/sourceware/www/sourceware/htdocs/cygwin/doc/${DEST}/
+        if: env.HAS_SSH_KEY == 'true'
+
   windows-build:
     runs-on: windows-latest
     strategy:
