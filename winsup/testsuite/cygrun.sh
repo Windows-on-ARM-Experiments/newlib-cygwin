@@ -13,5 +13,10 @@ then
     windows_runtime_root=$(cygpath -m $runtime_root)
     $mingwtestdir/cygrun "$exe -v -cygwin $windows_runtime_root/cygwin1.dll"
 else
-    cygdrop $mingwtestdir/cygrun $exe
+    if uname | grep -qi cygwin; then
+        cygdrop $mingwtestdir/cygrun $exe
+    else
+        # Running under WSL.
+        timeout --preserve-status 300 "$exe"
+    fi
 fi
