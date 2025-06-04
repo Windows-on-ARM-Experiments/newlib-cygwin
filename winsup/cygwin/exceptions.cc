@@ -28,24 +28,8 @@ details. */
 #include "ntdll.h"
 #include "exception.h"
 #include "posix_timer.h"
+#include "register.h"
 #include "gcc_seh.h"
-
-/* Define macros for CPU-agnostic register access.  The _CX_foo
-   macros are for access into CONTEXT, the _MC_foo ones for access into
-   mcontext. The idea is to access the registers in terms of their job,
-   not in terms of their name on the given target. */
-#ifdef __x86_64__
-#define _CX_instPtr	Rip
-#define _CX_stackPtr	Rsp
-#define _CX_framePtr	Rbp
-/* For special register access inside mcontext. */
-#define _MC_retReg	rax
-#define _MC_instPtr	rip
-#define _MC_stackPtr	rsp
-#define _MC_uclinkReg	rbx	/* MUST be callee-saved reg */
-#else
-#error unimplemented for this target
-#endif
 
 #define CALL_HANDLER_RETRY_OUTER 10
 #define CALL_HANDLER_RETRY_INNER 10
@@ -230,7 +214,7 @@ cygwin_exception::dump_exception ()
 	}
     }
 
-#ifdef __x86_64__
+#if defined(__x86_64__)
   if (exception_name)
     small_printf ("Exception: %s at rip=%012X\r\n", exception_name, ctx->Rip);
   else
@@ -250,6 +234,10 @@ cygwin_exception::dump_exception ()
   small_printf ("cs=%04x ds=%04x es=%04x fs=%04x gs=%04x ss=%04x\r\n",
 		ctx->SegCs, ctx->SegDs, ctx->SegEs, ctx->SegFs,
 		ctx->SegGs, ctx->SegSs);
+#elif defined(__aarch64__)
+  // TODO
+  if (exception_name)
+    small_printf ("Exception: %s at pc=%012X\r\n", exception_name, ctx->Pc);
 #else
 #error unimplemented for this target
 #endif
@@ -1781,11 +1769,7 @@ _cygtls::call_signal_handler ()
 	      __unwind_single_frame ((PCONTEXT) &context1.uc_mcontext);
 	      if (stackptr > stack)
 		{
-#ifdef __x86_64__
-		  context1.uc_mcontext.rip = retaddr ();
-#else
-#error unimplemented for this target
-#endif
+		  context1.uc_mcontext._MC_instPtr = retaddr ();
 		}
 	    }
 
@@ -2089,7 +2073,7 @@ makecontext (ucontext_t *ucp, void (*func) (void), int argc, ...)
        providing pointer values to func without additional porting effort. */
   va_start (ap, argc);
   for (int i = 0; i < argc; ++i)
-#ifdef __x86_64__
+#if defined(__x86_64__)
     switch (i)
       {
       case 0:
@@ -2108,6 +2092,8 @@ makecontext (ucontext_t *ucp, void (*func) (void), int argc, ...)
 	sp[i + 1] = va_arg (ap, uintptr_t);
 	break;
       }
+#elif defined(__aarch64__)
+  // TODO
 #else
 #error unimplemented for this target
 #endif
