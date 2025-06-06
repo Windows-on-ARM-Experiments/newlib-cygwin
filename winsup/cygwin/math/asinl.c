@@ -10,12 +10,17 @@
  */
 
 /* asin = atan (x / sqrt(1 - x^2)) */
+#if defined(__aarch64__)
+#include <math.h>
+#endif
+
 long double asinl (long double x);
 
 long double asinl (long double x)
 {
   long double res = 0.0L;
 
+#if defined(__x86_64__)
   asm volatile (
 	"fld	%%st\n\t"
 	"fmul	%%st(0)\n\t"			/* x^2 */
@@ -24,5 +29,9 @@ long double asinl (long double x)
 	"fsqrt\n\t"				/* sqrt (1 - x^2) */
 	"fpatan"
 	: "=t" (res) : "0" (x) : "st(1)");
+#elif defined(__aarch64__)
+  // TODO: Complete AArch64 assembly implementation
+  res = atan2l (x, sqrtl (1 - x * x));
+#endif
   return res;
 }

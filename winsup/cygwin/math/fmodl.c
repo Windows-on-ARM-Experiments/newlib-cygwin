@@ -3,6 +3,10 @@
  * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
+#if defined(__aarch64__)
+#include <math.h>
+#endif
+
 long double fmodl (long double x, long double y);
 
 long double
@@ -10,6 +14,7 @@ fmodl (long double x, long double y)
 {
   long double res = 0.0L;
 
+#if defined(__x86_64__)
   asm volatile (
        "1:\tfprem\n\t"
        "fstsw   %%ax\n\t"
@@ -17,5 +22,9 @@ fmodl (long double x, long double y)
        "jp      1b\n\t"
        "fstp    %%st(1)"
        : "=t" (res) : "0" (x), "u" (y) : "ax", "st(1)");
+#elif defined(__aarch64__)
+  // TODO: Complete AArch64 assembly implementation
+  res = fmod (x, y);
+#endif
   return res;
 }
