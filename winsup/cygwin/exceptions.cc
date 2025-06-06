@@ -1848,7 +1848,7 @@ _cygtls::call_signal_handler ()
 
 	  /* In assembler: Save regs on new stack, move to alternate stack,
 	     call thisfunc, revert stack regs. */
-#ifdef __x86_64__
+#if defined(__x86_64__)
 	  /* Clobbered regs: rcx, rdx, r8, r9, r10, r11, rbp, rsp */
 	  __asm__ ("\n\
 		   movq  %[NEW_SP], %%rax  # Load alt stack into rax	\n\
@@ -1886,6 +1886,8 @@ _cygtls::call_signal_handler ()
 		       [FUNC]	"o" (thisfunc),
 		       [WRAPPER] "o" (altstack_wrapper)
 		   : "memory");
+#elif defined(__aarch64__)
+  // TODO
 #else
 #error unimplemented for this target
 #endif
