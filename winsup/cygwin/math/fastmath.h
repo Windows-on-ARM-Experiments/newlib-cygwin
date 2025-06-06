@@ -26,7 +26,11 @@ static __inline__ double __fast_sqrt (double x)
 static __inline__ long double __fast_sqrtl (long double x)
 {
   long double res;
+#if defined(__x86_64__)
   asm __volatile__ ("fsqrt" : "=t" (res) : "0" (x));
+#elif defined(__aarch64__)
+  asm volatile ("fsqrt %d0, %d1" : "=w"(res) : "w"(x));
+#endif
   return res;
 }
 
@@ -41,22 +45,32 @@ static __inline__ float __fast_sqrtf (float x)
 static __inline__ double __fast_log (double x)
 {
    double res;
+#if defined(__x86_64__)
    asm __volatile__
      ("fldln2\n\t"
       "fxch\n\t"
       "fyl2x"
        : "=t" (res) : "0" (x) : "st(1)");
+#elif defined(__aarch64__)
+   // TODO: Complete AArch64 assembly implementation
+   res = log (x);
+#endif
    return res;
 }
 
 static __inline__ long double __fast_logl (long double x)
 {
   long double res;
-   asm __volatile__
-     ("fldln2\n\t"
-      "fxch\n\t"
-      "fyl2x"
-       : "=t" (res) : "0" (x) : "st(1)");
+#if defined(__x86_64__)
+  asm __volatile__
+    ("fldln2\n\t"
+     "fxch\n\t"
+     "fyl2x"
+      : "=t" (res) : "0" (x) : "st(1)");
+#elif defined(__aarch64__)
+  // TODO: Complete AArch64 assembly implementation
+  res = log (x);
+#endif
    return res;
 }
 
@@ -94,11 +108,16 @@ static __inline__ long double __fast_log1pl (long double x)
   if (fabsl (x) >= 1.0L - 0.5L * 1.41421356237309504880L)
     res = __fast_logl (1.0L + x);
   else
+#if defined(__x86_64__)
     asm __volatile__
       ("fldln2\n\t"
        "fxch\n\t"
        "fyl2xp1"
        : "=t" (res) : "0" (x) : "st(1)");
+#elif defined(__aarch64__)
+    // TODO: Complete AArch64 assembly implementation
+    res = log1p (x);
+#endif
    return res;
 }
 
