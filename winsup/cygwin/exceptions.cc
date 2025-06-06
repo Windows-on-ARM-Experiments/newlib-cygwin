@@ -2005,7 +2005,7 @@ swapcontext (ucontext_t *oucp, const ucontext_t *ucp)
 /* Trampoline function to set the context to uc_link.  The pointer to the
    address of uc_link is stored in a callee-saved register, referenced by
    _MC_uclinkReg from the C code.  If uc_link is NULL, call exit. */
-#ifdef __x86_64__
+#if defined(__x86_64__)
 /* _MC_uclinkReg == %rbx */
 __asm__ ("				\n\
 	.global	__cont_link_context	\n\
@@ -2026,7 +2026,15 @@ __cont_link_context:			\n\
 	nop				\n\
 	.seh_endproc			\n\
 	");
-
+#elif defined(__aarch64__)
+  // TODO
+  __asm__ ("				\n\
+	.global	__cont_link_context	\n\
+	.seh_proc __cont_link_context	\n\
+__cont_link_context:			\n\
+	.seh_endprologue		\n\
+	.seh_endproc			\n\
+	");
 #else
 #error unimplemented for this target
 #endif
