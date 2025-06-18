@@ -401,71 +401,45 @@ _sigdelayed_end:
 stabilize_sig_stack:
 	// prologue
 	stp	fp, lr, [sp, #-0x10]!		// save FP and LR registers
-	.seh_save_fplr_x+ 16
+	.seh_save_fplr_x 16
+	stp	x19, x20, [sp, #-0x10]!
+	.seh_save_regp_x x19, 16
 	.seh_endprologue
 
-	ldr	x10, [x18, #0x8]		// keep thread local storage base address in x10
+	ldr	x9, [x18, #0x8]		// load thread local storage base address
+	mov	x19, #_cygtls.current_sig	// load the _cygtls.current_sig offset
+	add x19, x9, x19	// final address of current_sig
+	mov	x20, #_cygtls.incyg	// load the _cygtls.incyg offset
+	add x20, x9, x20	// final address of incyg
 
-	// try to acquire the lock
-	mov	w9, #1				// set up value for atomic exchange
-	ldr	x11, =_cygtls.stacklock		// load the symbol address/offset
-	add	x12, x10, x11			// calculate final address
 1:
-	ldaxr	w13, [x12]			// load with acquire semantics
-	stlxr	w14, w9, [x12]			// store with release semantics
-	cbnz	w14, 1b				// if store failed, retry
-	cbz	w13, 2f				// if lock was acquired, continue
-	yield					// yield to allow other threads to run
-	b	1b				// retry acquiring the lock
-2:
-	// lock acquired, increment incyg counter
-	ldr	x11, =_cygtls.incyg		// load the symbol address/offset
-	add	x12, x10, x11			// calculate final address
-	ldr	w9, [x12]			// load current value of incyg counter
-	add	w9, w9, #1			// increment incyg counter
-	str	w9, [x12]			// store incremented value back
-
 	// check if there is a current signal to handle 
-	ldr	x11, =_cygtls.current_sig	// load the symbol address/offset
-	ldr	w9, [x10, x11]			// load current value of current_sig
-	cbz	w9, 3f				// if no current signal, jump to cleanup
+	ldr	w9, [x19]			// load current_sig
+	cbz	w9, 2f				// if no current signal, jump to cleanup
 
-	// release lock before calling signal handler
-	ldr	x11, =_cygtls.stacklock		// load the symbol address/offset
-	add	x12, x10, x11			// calculate final address
-	ldr	w9, [x12]			// load current value of stacklock counter
-	sub	w9, w9, #1			// decrement stacklock counter
-	stlr	w9, [x12]			// store with release semantics
+	mov w9, #1				// specify increment
+	staddl w9, [x20]		// atomically increment incyg with a lock
 
 	// prepare arguments and call signal handler
-	ldr	x0, =_cygtls.start_offset	// load the symbol address/offset
-	add	x0, x10, x0			// calculate final address
+	mov	x0, #_cygtls.start_offset	// load the _cygtls.start_offset offset
+	add	x0, x10, x0			// final address of start_offset
 	bl	_ZN7_cygtls19call_signal_handlerEv
-	ldr	x10, [x18, #0x8]		// restore x10 that may have been modified by the call
 
 	// decrement incyg counter
-	ldr	x11, =_cygtls.incyg		// load the symbol address/offset
-	add	x12, x10, x11			// calculate final address
-	ldr	w9, [x12]			// load current value of incyg counter
-	sub	w9, w9, #1			// decrement incyg counter
-	str	w9, [x12]			// store decremented value back
+	mov w9, #-1				// specify decrement
+	staddl w9, [x20]		// atomically decrement incyg with a lock
 
 	// go to the beginning to handle another signal
 	b	1b
-3:
-	// no signal to handle, decrement incyg counter
-	ldr	x11, =_cygtls.incyg		// load the symbol address/offset
-	add	x12, x10, x11			// calculate final address
-	ldr	w9, [x12]			// load current value of incyg counter
-	sub	w9, w9, #1			// decrement incyg counter
-	str	w9, [x12]			// store decremented value back
-
-	mov	x0, x10				// return TLS address in x0 (return value)
+2:
+	ldr	x0, [x18, #0x8]		// return TLS address in x0 (return value)
 
 	// epilogue
 	.seh_startepilogue
+	ldp	x19, x20, [sp], #0x10
+	.seh_save_regp_x x19, 16
 	ldp	fp, lr, [sp], #0x10
-	.seh_save_fplr_x+ 16
+	.seh_save_fplr_x 16
 	.seh_endepilogue
 	ret
 	.seh_endproc
@@ -655,13 +629,6 @@ setjmp:
 	ldr	x3, [x2]
 	// TODO: Save the value somewhere.
 
-	// decrement the stack lock
-	ldr	x2, =_cygtls.stacklock
-	add	x2, x0, x2
-	ldr	w3, [x2]
-	sub	w3, w3, #1
-	str	w3, [x2]
-
 	mov	w0, #0				// return 0
 
 	// epilogue
@@ -693,13 +660,6 @@ longjmp:
 	ldr	x11, =_cygtls.stackptr
 	add	x11, x0, x11
 	str	x10, [x11]
-
-	// release lock by decrementing counter
-	ldr	x11, =_cygtls.stacklock
-	add	x11, x0, x11
-	ldr	w12, [x11]
-	sub	w12, w12, #1
-	str	w12, [x11]
 
 	// we're not in cygwin anymore, clear "in cygwin" flag
 	ldr	x11, =_cygtls.incyg
