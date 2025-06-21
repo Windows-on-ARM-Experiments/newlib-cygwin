@@ -14,10 +14,18 @@ cygdoc_DATA = \
 	CYGWIN_LICENSE \
 	COPYING
 
-SUBDIRS = cygwin cygserver utils testsuite
+SUBDIRS = cygwin utils testsuite
+
+if BUILD_CYGSERVER
+SUBDIRS += cygserver
+endif
 
 if BUILD_DOC
 SUBDIRS += doc
 endif
 
-cygserver utils testsuite: cygwin
+utils testsuite: cygwin
+
+if BUILD_CYGSERVER
+cygserver: cygwin
+endif
