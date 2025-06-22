@@ -96,28 +96,58 @@ jobs:
       matrix:
         include:
           - arch: aarch64
-            runner: ubuntu-24.04-arm
 
-    runs-on: ${{ matrix.runner }}
+    runs-on: [
+      Windows,
+      WSL,
+      ARM64
+    ]
     name: Ubuntu cross ${{ matrix.arch }}-pc-cygwin
+
+    defaults:
+      run:
+        shell: wsl --user runner bash --noprofile --norc -euo pipefail "$(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
 
     env:
       GH_TOKEN: ${{ github.token }}
+      WSLENV: CYGWIN:GH_TOKEN:GITHUB_ENV/p:GITHUB_OUTPUT/p:GITHUB_STEP_SUMMARY/p
 
     steps:
-      - uses: actions/checkout@v3
+      # prepare non-ephemeral runner environment
+      - name: Prepare environment
+        shell: powershell
+        run: |
+          if (Test-Path -Path newlib-cygwin) {
+            Remove-Item -Recurse -Force newlib-cygwin
+          }
+          if (Test-Path -Path *-msvcrt-toolchain.tar.gz) {
+            Remove-Item -Recurse -Force *-msvcrt-toolchain.tar.gz
+          }
+          if (Test-Path -Path toolchain) {
+            Remove-Item -Recurse -Force toolchain
+          }
+          if (Test-Path -Path build) {
+            Remove-Item -Recurse -Force build
+          }
+          if (Test-Path -Path install) {
+            Remove-Item -Recurse -Force install
+          }
 
       # install build tools
       - name: Install build tools
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
+          sudo apt update
+          sudo apt install -y \
             autoconf \
             automake \
+            binutils \
+            bzip2 \
             dblatex \
             docbook2x \
             docbook-xsl \
             gawk \
+            gcc \
+            g++ \
             gh \
             make \
             openssh-client \
@@ -128,12 +158,21 @@ jobs:
             python3-ply \
             xmlto
 
+      # checkout
+      - name: Checkout
+        run: |
+          git clone https://github.com/${{ github.repository }} -b ${{ github.ref_name }}
+
       # download toolchain
       - name: Download toolchain
         run: |
           gh release download \
             --repo Windows-on-ARM-Experiments/mingw-woarm64-build \
             --pattern ${{ matrix.arch }}-*-msvcrt-toolchain.tar.gz
+
+      # install toolchain
+      - name: Install toolchain
+        run: |
           mkdir -p toolchain/${{ matrix.arch }}-w64-mingw32
           mkdir -p toolchain/${{ matrix.arch }}-pc-cygwin
           tar -xzf ${{ matrix.arch }}-w64-mingw32-msvcrt-toolchain.tar.gz -C toolchain/${{ matrix.arch }}-w64-mingw32
@@ -142,19 +181,48 @@ jobs:
       # build
       - name: Configure, build and install
         run: |
-          export PATH="$PATH:${{ github.workspace }}/toolchain/${{ matrix.arch }}-w64-mingw32/bin:${{ github.workspace }}/toolchain/${{ matrix.arch }}-pc-cygwin/bin"
-          export CXXFLAGS_FOR_TARGET="-D_WIN64 -I${{ github.workspace }}/toolchain/${{ matrix.arch }}-w64-mingw32/include"
-          export LDFLAGS_FOR_TARGET="-L${{ github.workspace }}/toolchain/${{ matrix.arch }}-pc-cygwin/lib"
-          export MINGW_CPPFLAGS="-I${{ github.workspace }}/toolchain/${{ matrix.arch }}-w64-mingw32/include"
-          export MINGW_LDFLAGS="-L${{ github.workspace }}/toolchain/${{ matrix.arch }}-w64-mingw32/lib"
+          WORKSPACE=$(realpath $(pwd))
+          export PATH="$PATH:$WORKSPACE/build/${{ matrix.arch }}-pc-cygwin/winsup/testsuite/testinst/bin:$WORKSPACE/toolchain/${{ matrix.arch }}-w64-mingw32/bin:$WORKSPACE/toolchain/${{ matrix.arch }}-pc-cygwin/bin"
+          export CXXFLAGS_FOR_TARGET="-D_WIN64 -I$WORKSPACE/toolchain/${{ matrix.arch }}-w64-mingw32/include"
+          export LDFLAGS_FOR_TARGET="-L$WORKSPACE/toolchain/${{ matrix.arch }}-pc-cygwin/lib"
+          export MINGW_CPPFLAGS="-I$WORKSPACE/toolchain/${{ matrix.arch }}-w64-mingw32/include"
+          export MINGW_LDFLAGS="-L$WORKSPACE/toolchain/${{ matrix.arch }}-w64-mingw32/lib"
+          export CYGWIN=winsymlinks:sys
 
           mkdir build install
-          (cd winsup && ./autogen.sh)
-          (cd build && ../configure --target=${{ matrix.arch }}-pc-cygwin --prefix=$(realpath $(pwd)/../install) )
+          (cd newlib-cygwin/winsup && ./autogen.sh)
+          (cd build && ../newlib-cygwin/configure --target=${{ matrix.arch }}-pc-cygwin --prefix=$(realpath $(pwd)/../install) )
           make -C build -j64
           make -C build/*/newlib info man
           make -C build install
           make -C build/*/newlib install-info install-man
+
+      # test
+      - name: Test Cygwin
+        continue-on-error: true
+        run: |
+          WORKSPACE=$(realpath $(pwd))
+          export PATH="$PATH:$WORKSPACE/build/${{ matrix.arch }}-pc-cygwin/winsup/testsuite/testinst/bin:$WORKSPACE/toolchain/${{ matrix.arch }}-w64-mingw32/bin:$WORKSPACE/toolchain/${{ matrix.arch }}-pc-cygwin/bin"
+          export CXXFLAGS_FOR_TARGET="-D_WIN64 -I$WORKSPACE/toolchain/${{ matrix.arch }}-w64-mingw32/include"
+          export LDFLAGS_FOR_TARGET="-L$WORKSPACE/toolchain/${{ matrix.arch }}-pc-cygwin/lib"
+          export MINGW_CPPFLAGS="-I$WORKSPACE/toolchain/${{ matrix.arch }}-w64-mingw32/include"
+          export MINGW_LDFLAGS="-L$WORKSPACE/toolchain/${{ matrix.arch }}-w64-mingw32/lib"
+          export CYGWIN=winsymlinks:sys
+
+          (cd build/${{ matrix.arch }}-pc-cygwin/winsup && WSLENV="$WSLENV:PATH/l" make check AM_COLOR_TESTS=always)
+
+      - name: Pack build folder
+        if: failure()
+        run: |
+          tar -cjf build.tar.bz2 build/
+
+      - name: Upload build folder
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cygwin-build
+          retention-days: 1
+          path: build.tar.bz2
 
   windows-build:
     runs-on: windows-latest
