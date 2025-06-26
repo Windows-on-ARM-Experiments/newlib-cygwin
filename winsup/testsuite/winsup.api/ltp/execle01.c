@@ -133,7 +133,11 @@ int exp_enos[]={0, 0};		/* Zero terminated list of expected errnos */
 
 int pid;		/* process id from fork */
 int status;		/* status returned from waitpid */
-extern char **environ;	/* pointer to this processes env, to pass along */
+
+#if defined(__aarch64__)
+__attribute__((dllimport))	/* workaround for large relocation issue in binutils */
+#endif
+extern char **environ;		/* pointer to this processes env, to pass along */
 
 int
 main(int ac, char **av)

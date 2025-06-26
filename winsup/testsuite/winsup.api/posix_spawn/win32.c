@@ -9,6 +9,12 @@
 #include <sys/cygwin.h>
 #include <unistd.h>
 
+/* Workaround for large relocation issue in binutils. */
+#if defined(__aarch64__)
+__attribute__((dllimport))
+extern char **environ;
+#endif
+
 char * find_winchild (void)
 {
   static const char winchild[] = "/winchild";
