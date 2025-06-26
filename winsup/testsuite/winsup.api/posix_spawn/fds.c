@@ -7,6 +7,12 @@
 #include <string.h>
 #include <unistd.h>
 
+/* Workaround for large relocation issue in binutils. */
+#if defined(__aarch64__)
+__attribute__((dllimport))	
+extern char **environ;
+#endif
+
 int handle_child (char *devfd, char *target)
 {
   char buf[PATH_MAX];
