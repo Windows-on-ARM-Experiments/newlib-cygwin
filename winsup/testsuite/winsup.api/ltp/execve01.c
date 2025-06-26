@@ -134,6 +134,10 @@ int exp_enos[]={0, 0};		/* Zero terminated list of expected errnos */
 int pid;			/* process id from fork */
 int status;			/* status returned from waitpid */
 char *const args[2]={"/usr/bin/test", 0};	/* argument list for execve call */
+
+#if defined(__aarch64__)
+__attribute__((dllimport))	/* workaround for large relocation issue in binutils */
+#endif
 extern char **environ;		/* pointer to this processes env, to pass along */
 
 int
