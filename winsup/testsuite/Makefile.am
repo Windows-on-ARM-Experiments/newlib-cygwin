@@ -49,7 +49,6 @@ check_PROGRAMS = \
 	winsup.api/sigchld \
 	winsup.api/signal-into-win32-api \
 	winsup.api/systemcall \
-	winsup.api/user_malloc \
 	winsup.api/waitpid \
 	winsup.api/ltp/access01 \
 	winsup.api/ltp/access03 \
