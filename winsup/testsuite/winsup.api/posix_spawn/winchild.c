@@ -3,7 +3,18 @@
 #include <winternl.h>
 #include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
 
+#if defined(__aarch64__)
+int WinMain(
+  HINSTANCE hInstance,
+  HINSTANCE hPrevInstance,
+  LPSTR lpCmdLine,
+  int nShowCmd
+) {
+
+}
+#endif
 
 int wmain (int argc, wchar_t **argv)
 {
