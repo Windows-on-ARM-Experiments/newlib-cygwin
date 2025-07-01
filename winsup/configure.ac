@@ -75,6 +75,8 @@ esac
 
 AC_SUBST(DLL_ENTRY)
 
+AM_CONDITIONAL(BUILD_X86_64, [test $build_cpu = "x86_64"])
+AM_CONDITIONAL(BUILD_AARCH64, [test $build_cpu = "aarch64"])
 AM_CONDITIONAL(TARGET_X86_64, [test $target_cpu = "x86_64"])
 AM_CONDITIONAL(TARGET_AARCH64, [test $target_cpu = "aarch64"])
 
