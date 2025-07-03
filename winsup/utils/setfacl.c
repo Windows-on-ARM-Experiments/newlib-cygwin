@@ -314,6 +314,7 @@ recompute_mask (aclent_t *tgt, int tcnt, int got_mask, int got_def_mask)
 	case GROUP:
 	  /* Do we need a CLASS_OBJ at all? */
 	  need_mask = 1;
+	  __attribute__((fallthrough));
 	  /*FALLTHRU*/
 	case GROUP_OBJ:
 	  /* Compute resulting maximum mask. */
@@ -327,6 +328,7 @@ recompute_mask (aclent_t *tgt, int tcnt, int got_mask, int got_def_mask)
 	case DEF_GROUP:
 	  /* Do we need a DEF_CLASS_OBJ at all? */
 	  need_def_mask = 1;
+	  __attribute__((fallthrough));
 	  /*FALLTHRU*/
 	case DEF_GROUP_OBJ:
 	  /* Compute resulting maximum default mask. */
