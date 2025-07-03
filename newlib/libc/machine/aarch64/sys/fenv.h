@@ -61,7 +61,14 @@ typedef	__uint64_t	fexcept_t;
 			 FE_UPWARD | FE_TOWARDZERO)
 #define	_ROUND_SHIFT	22
 
-
+/* Only Solaris and QNX implement fegetprec/fesetprec.  As Solaris, use the
+   values defined by http://www.open-std.org/jtc1/sc22//WG14/www/docs/n752.htm
+   QNX defines different values. */
+#if __MISC_VISIBLE
+#define FE_FLTPREC	(0)
+#define FE_DBLPREC	(2)
+#define FE_LDBLPREC	(3)
+#endif
 
 /* Default floating-point environment */
 extern const fenv_t	*_fe_dfl_env;
@@ -115,6 +122,21 @@ fegetexcept(void)
 
 #endif /* __BSD_VISIBLE */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
+#ifdef __CYGWIN__
+
+#if __MISC_VISIBLE
+int fegetprec (void);
+int fesetprec (int __prec);
+#endif
+
+#endif /* __CYGWIN__ */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* !_FENV_H_ */

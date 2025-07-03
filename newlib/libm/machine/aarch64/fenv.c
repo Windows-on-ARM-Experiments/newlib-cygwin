@@ -55,3 +55,33 @@ extern inline int feupdateenv(const fenv_t *__envp);
 extern inline int feenableexcept(int __mask);
 extern inline int fedisableexcept(int __mask);
 extern inline int fegetexcept(void);
+
+#if defined(__CYGWIN__)
+
+/* Returns the currently selected precision, represented by one of the
+   values of the defined precision macros. */
+int
+fegetprec (void)
+{
+  /* AArch64 doesn't have configurable precision.
+     Return a fixed value indicating double precision (most common). */
+  return FE_DBLPREC;
+}
+
+/* http://www.open-std.org/jtc1/sc22//WG14/www/docs/n752.htm:
+
+   The fesetprec function establishes the precision represented by its
+   argument prec.  If the argument does not match a precision macro, the
+   precision is not changed.
+
+   The fesetprec function returns a nonzero value if and only if the
+   argument matches a precision macro (that is, if and only if the requested
+   precision can be established). */
+int
+fesetprec (int prec)
+{
+  /* Aarch64 doesn't support changing precision at runtime. */
+  return 0; // return failure
+}
+
+#endif
