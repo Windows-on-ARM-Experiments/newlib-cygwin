@@ -82,7 +82,7 @@ extern const fenv_t	*_fe_dfl_env;
 
 /* We currently provide no external definitions of the functions below. */
 
-static inline int
+__fenv_static inline int
 feenableexcept(int __mask)
 {
 	fenv_t __old_r, __new_r;
@@ -93,7 +93,7 @@ feenableexcept(int __mask)
 	return ((__old_r >> _FPUSW_SHIFT) & FE_ALL_EXCEPT);
 }
 
-static inline int
+__fenv_static inline int
 fedisableexcept(int __mask)
 {
 	fenv_t __old_r, __new_r;
@@ -104,7 +104,7 @@ fedisableexcept(int __mask)
 	return ((__old_r >> _FPUSW_SHIFT) & FE_ALL_EXCEPT);
 }
 
-static inline int
+__fenv_static inline int
 fegetexcept(void)
 {
 	fenv_t __r;
