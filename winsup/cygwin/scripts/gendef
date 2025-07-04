@@ -391,6 +391,41 @@ _sigfe:						# stack is aligned on entry!
 	.seh_endprologue
 	ldr x9, [sp], #16
 	br x9
+//new implementation begins
+    ldr     x9, [x18, #0x8]                  // _cygtls base
+    mov     w7, #1
+1:
+    mov     x10, #_cygtls.stacklock
+    add     x10, x9, x10
+    ldxr    w11, [x10]
+    cbnz    w11, 1b
+    stxr    w12, w7, [x10]
+    cbnz    w12, 1b
+    dmb     ish 
+    mov     x13, #8
+    mov     x14, #_cygtls.stackptr
+    add     x14, x9, x14
+    ldadd   x13, x15, [x14]                  // x15 = old pointer
+    adr     x19, _sigbe                      // x19 = &_sigbe
+    // Atomic exchange: _sigbe <--> [sp + 8]
+    add     x22, sp, #8                      // x22 = sp + 8
+2:
+    ldxr    x20, [x22]                       // original return addr
+    stxr    w21, x19, [x22]                  // try to store _sigbe
+    cbnz    w21, 2b
+    str     x20, [x15]                       // store original return on alt stack
+    // incyg++
+    mov     x16, #_cygtls.incyg
+    add     x16, x9, x16
+    ldr     w17, [x16]
+    add     w17, w17, #1
+    str     w17, [x16]
+    // unlock
+    mov     w7, #0
+    str     w7, [x10]
+    //ldr     x21, [sp], #8
+    //br      x21
+	//Custom implementation ends
 	.seh_endproc
 
 	.global _sigbe
