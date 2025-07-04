@@ -115,7 +115,18 @@ EOF
 	$res = <<EOF;
 	.extern $func
 	.global $fe
+	.seh_proc $fe
 $fe:
+	sub sp, sp, 16
+	.seh_stackalloc 16
+	.seh_endprologue
+	adrp x9, $func
+	add x9, x9, :lo12:$func
+	str x9, [sp, 0]
+	adrp x9, $sigfe_func
+	add x9, x9, :lo12:$sigfe_func
+	br x9
+	.seh_endproc
 EOF
     }
 
@@ -357,8 +368,13 @@ EOF
 	.text
 
 _sigfe_maybe:
-	.global _sigbe
+	.seh_proc _sigfe
 _sigfe:
+	.seh_endprologue
+	ldr x9, [sp], #16
+	br x9
+	.seh_endproc
+	.global _sigbe
 _sigbe:
 	.global	sigdelayed
 sigdelayed:
