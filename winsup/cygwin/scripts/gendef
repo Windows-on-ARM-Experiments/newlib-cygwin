@@ -458,8 +458,96 @@ _sigbe:						# return here after cygwin syscall
 	.global	sigdelayed
 	.seh_proc sigdelayed
 sigdelayed:
+	// vibe coded
 	.seh_endprologue
+	// Save FP + LR
+	stp     x29, x30, [sp, #-16]!
+	mov     x29, sp
+	.seh_save_fplr_x 0
 
+	// Save general-purpose callee-saved + volatile regs we use
+	sub     sp, sp, #240           // enough room, 16-byte aligned
+	stp     x19, x20, [sp, #0]
+	stp     x21, x22, [sp, #16]
+	stp     x23, x24, [sp, #32]
+	stp     x25, x26, [sp, #48]
+	stp     x27, x28, [sp, #64]
+	// save w15 (saved_errno), dummy for stacklock, stackptr, etc.
+	str     wzr, [sp, #80]         // saved_errno
+	str     wzr, [sp, #84]         // unused
+	.seh_save_reg x19, 0
+	.seh_save_reg x20, 8
+	.seh_save_reg x21, 16
+	.seh_save_reg x22, 24
+	.seh_save_reg x23, 32
+	.seh_save_reg x24, 40
+	.seh_save_reg x25, 48
+	.seh_save_reg x26, 56
+	.seh_save_reg x27, 64
+	.seh_save_reg x28, 72
+
+
+	// Load TLS pointer from x18
+	ldr     x9, [x18, #0x8]        // x9 = _cygtls base
+
+	// Save _cygtls.saved_errno to w15
+	ldr     x11, =_cygtls.saved_errno
+	add     x11, x9, x11
+	ldr     w15, [x11]
+	str     w15, [sp, #80]         // store in temporary location
+
+	// Call _cygtls::call_signal_handler()
+	ldr     x0, =_cygtls.start_offset
+	add     x0, x9, x0             // x0 = &(_cygtls.start_offset + TLS base)
+	bl      _ZN7_cygtls19call_signal_handlerEv
+
+	// Acquire _cygtls.stacklock (spinlock)
+1:
+	ldr     x11, =_cygtls.stacklock
+	add     x11, x9, x11
+	mov     w10, #1
+	ldxr    w12, [x11]
+	cbnz    w12, 1f
+	stxr    w13, w10, [x11]
+	cbnz    w13, 1b
+1:
+	// Check if saved_errno < 0
+	ldr     w15, [sp, #80]
+	cmp     w15, #0
+	blt     2f
+	// Restore errno if saved_errno >= 0
+	ldr     x11, =_cygtls.errno_addr
+	add     x11, x9, x11
+	ldr     x11, [x11]             // errno_addr is pointer
+	str     w15, [x11]
+2:
+	// Atomically decrement _cygtls.stackptr by 8
+	ldr     x11, =_cygtls.stackptr
+	add     x11, x9, x11
+	mov     x12, #-8
+	ldadd   x12, x10, [x11]        // x10 = previous value
+	// Pop return address from signal stack
+	mov     x13, xzr
+	str     x13, [x10]             // clear/consume return address
+	// Reset _cygtls.incyg and release _cygtls.stacklock
+	ldr     x11, =_cygtls.incyg
+	add     x11, x9, x11
+	str     wzr, [x11]
+	ldr     x11, =_cygtls.stacklock
+	add     x11, x9, x11
+	str     wzr, [x11]
+
+	// Skip xsave/fxsave logic — not applicable on AArch64
+
+	// Restore registers
+	ldp     x19, x20, [sp, #0]
+	ldp     x21, x22, [sp, #16]
+	ldp     x23, x24, [sp, #32]
+	ldp     x25, x26, [sp, #48]
+	ldp     x27, x28, [sp, #64]
+	add     sp, sp, #240
+
+	ldp     x29, x30, [sp], #16
 	ret
 	.seh_endproc
 _sigdelayed_end:
@@ -493,7 +581,7 @@ stabilize_sig_stack:
 	add	w9, w9, #1			// increment incyg counter
 	str	w9, [x12]			// store incremented value back
 
-	// check if there is a current signal to handle 
+	// check if there is a current signal to handle
 	ldr	x11, =_cygtls.current_sig	// load the symbol address/offset
 	ldr	w9, [x10, x11]			// load current value of current_sig
 	cbz	w9, 3f				// if no current signal, jump to cleanup
