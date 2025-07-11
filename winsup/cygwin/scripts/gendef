@@ -390,38 +390,41 @@ _sigfe_maybe:					# stack is aligned on entry!
 _sigfe:                     		   	// stack is aligned on entry!
 	.seh_endprologue
 	ldr     x9, [x18, #0x8]
-	mov     w7, #1
 1:
-	mov     x10, #_cygtls.stacklock
-	add     x10, x9, x10
-	ldxr    w11, [x10]
+	mov     w7, #1
+	mov     x8, #_cygtls.stacklock
+	add     x8, x9, x8
+	ldxr    w11, [x8]
 	cbnz    w11, 1b
-	stxr    w12, w7, [x10]
+	stxr    w12, w7, [x8]
 	cbnz    w12, 1b
 	dmb     ish
 	mov     x13, #8
 	mov     x14, #_cygtls.stackptr
 	add     x14, x9, x14
 2:
-	ldxr    x15, [x14]
-	add     x21, x15, x13
-	stxr    w22, x21, [x14]
-	cbnz    w22, 2b
-	adr     x19, _sigbe
-3:
-	ldxr    x20, [sp]
-	stxr    w23, x19, [sp]
-	cbnz    w23, 3b
-	str     x20, [x15]
-	mov     x16, #_cygtls.incyg
-	add     x16, x9, x16
-	ldr     w17, [x16]
-	add     w17, w17, #1
-	str     w17, [x16]
-	mov     w7, #0
-	str     w7, [x10]
-	ldr     x21, [sp], #8
-	br      x21
+	ldr    	x15, [x14]
+	add     x16, x15, x13
+	stxr    w17, x16, [x14]
+	cbnz    w17, 2b
+	adr     x11, _sigbe
+	ldr     x12, [sp, #8]
+	str     x11, [sp, #8]
+	str     x12, [x15]
+	mov     x17, #_cygtls.incyg
+	add     x17, x9, x17
+	ldr     w18, [x17]
+	add     w18, w18, #1
+	str     w18, [x17]
+	mov     x19, #_cygtls.stacklock
+	add     x19, x9, x19
+	ldr     w20, [x19]
+	sub     w20, w20, #1
+	str     w20, [x19]
+	ldr     x16, [x15]
+	br 		x16
+	//ldr     x10, [sp], #0x10
+	//br      x10
 	.seh_endproc
 
 	.global _sigbe
