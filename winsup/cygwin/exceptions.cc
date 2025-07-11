@@ -2108,7 +2108,7 @@ makecontext (ucontext_t *ucp, void (*func) (void), int argc, ...)
        providing pointer values to func without additional porting effort. */
   va_start (ap, argc);
   for (int i = 0; i < argc; ++i)
-#ifdef __x86_64__
+#if defined(__x86_64__)
     switch (i)
       {
       case 0:
@@ -2127,6 +2127,8 @@ makecontext (ucontext_t *ucp, void (*func) (void), int argc, ...)
 	sp[i + 1] = va_arg (ap, uintptr_t);
 	break;
       }
+#elif defined(__aarch64__)
+  // TODO
 #else
 #error unimplemented for this target
 #endif
