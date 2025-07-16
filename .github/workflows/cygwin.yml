@@ -90,6 +90,88 @@ jobs:
         scp -pr install/share/doc/{cygwin-api,cygwin-ug-net,faq}* cygwin-admin@cygwin.com:/sourceware/www/sourceware/htdocs/cygwin/doc/${DEST}/
       if: env.HAS_SSH_KEY == 'true'
 
+  ubuntu-build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+
+    runs-on: ${{ matrix.runner }}
+    name: Ubuntu cross ${{ matrix.arch }}-pc-cygwin
+
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TOOLCHAIN_REPO: Windows-on-ARM-Experiments/mingw-woarm64-build
+
+    steps:
+      - uses: actions/checkout@v3
+
+      # install build tools
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            autoconf \
+            automake \
+            dblatex \
+            docbook2x \
+            docbook-xsl \
+            gawk \
+            gh \
+            make \
+            openssh-client \
+            patch \
+            perl \
+            python3 \
+            python3-lxml \
+            python3-ply \
+            xmlto
+
+      # download toolchain
+      - name: Download toolchain
+        run: |
+          CYGWIN_DIGEST=$(gh release view \
+            --repo ${{ env.TOOLCHAIN_REPO }} \
+            --json assets \
+            --jq '.assets[] | select(.name | test("${{ matrix.arch }}-pc-cygwin-msvcrt-toolchain.tar.gz")).digest')
+          MINGW_DIGEST=$(gh release view \
+            --repo ${{ env.TOOLCHAIN_REPO }} \
+            --json assets \
+            --jq '.assets[] | select(.name | test("${{ matrix.arch }}-w64-mingw32-msvcrt-toolchain.tar.gz")).digest')
+          gh release download \
+            --repo ${{ env.TOOLCHAIN_REPO }} \
+            --pattern ${{ matrix.arch }}-*-msvcrt-toolchain.tar.gz
+          sha256sum -c <<< "${CYGWIN_DIGEST#sha256:} ${{ matrix.arch }}-pc-cygwin-msvcrt-toolchain.tar.gz"
+          sha256sum -c <<< "${MINGW_DIGEST#sha256:} ${{ matrix.arch }}-w64-mingw32-msvcrt-toolchain.tar.gz"
+
+      # install toolchain
+      - name: Install toolchain
+        run: |
+          mkdir -p toolchain/${{ matrix.arch }}-w64-mingw32
+          mkdir -p toolchain/${{ matrix.arch }}-pc-cygwin
+          tar -xzf ${{ matrix.arch }}-w64-mingw32-msvcrt-toolchain.tar.gz -C toolchain/${{ matrix.arch }}-w64-mingw32
+          tar -xzf ${{ matrix.arch }}-pc-cygwin-msvcrt-toolchain.tar.gz -C toolchain/${{ matrix.arch }}-pc-cygwin
+
+      # build
+      - name: Configure, build and install
+        run: |
+          export PATH="$PATH:${{ github.workspace }}/toolchain/${{ matrix.arch }}-w64-mingw32/bin:${{ github.workspace }}/toolchain/${{ matrix.arch }}-pc-cygwin/bin"
+          export CXXFLAGS_FOR_TARGET="-D_WIN64 -I${{ github.workspace }}/toolchain/${{ matrix.arch }}-pc-cygwin/include"
+          export LDFLAGS_FOR_TARGET="-L${{ github.workspace }}/toolchain/${{ matrix.arch }}-pc-cygwin/lib"
+          export MINGW_CPPFLAGS="-I${{ github.workspace }}/toolchain/${{ matrix.arch }}-w64-mingw32/include"
+          export MINGW_LDFLAGS="-L${{ github.workspace }}/toolchain/${{ matrix.arch }}-w64-mingw32/lib"
+          export MAKEFLAGS="V=1 -j$(nproc)"
+
+          mkdir build install
+          (cd winsup && ./autogen.sh)
+          (cd build && ../configure --target=${{ matrix.arch }}-pc-cygwin --prefix=$(realpath $(pwd)/../install) )
+          make -C build
+          make -C build/*/newlib info man
+          make -C build install
+          make -C build/*/newlib install-info install-man
+
   windows-build:
     runs-on: windows-latest
     strategy:
