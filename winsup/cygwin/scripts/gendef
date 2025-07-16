@@ -370,15 +370,55 @@ EOF
 	.seh_proc _sigfe_maybe
 _sigfe_maybe:					# stack is aligned on entry!
 	.seh_endprologue
-	ldr x10, [x18, #0x8]
-0:	ret
+	ldr x10, [x18, #0x8]              // x10 = TEB pointer (thread environment block base)
+	ldr	x11, =_cygtls.initialized // x11 = offset of cygtls.initialized inside thread memory
+	add     x11, x10, x11             // x11 = address of cygtls.initialized
+	mov     x12, sp                   // x12 = current stack pointer
+	cmp     x11, x12                  // Compare TLS address to SP
+	b.hs    0f                        // If SP >= TLS address, skip TLS logic
+	ldr     w13, [x11]                // Load initialized magic value
+	movz    w14, #0xc763              // Prepare magic value (lower half)
+	movk    w14, #0x173f, lsl #16     // Complete magic: 0xc763173f
+	cmp     w13, w14                  // Compare loaded with expected
+	b.ne    0f                        // If not equal, skip TLS
+	ret                               // TLS is valid, return normally
+0:
+	ret
 	.seh_endproc
 
 	.seh_proc _sigfe
-_sigfe:						# stack is aligned on entry!
+_sigfe:                     		   		// stack is aligned on entry!
 	.seh_endprologue
-	ldr	x10, [sp], #0x10
-	br	x10
+	ldr     x9, [x18, #0x8]               	// load bottom of stack
+	mov     w7, #1                        	// lock value
+1:
+	mov     x10, #_cygtls.stacklock
+	add     x10, x9, x10                  	// address of stacklock
+	ldxr    w11, [x10]                    	// exclusive load
+	cbnz    w11, 1b                       	// if not zero, spin
+	stxr    w12, w7, [x10]                	// try to store 1
+	cbnz    w12, 1b                       	// if store failed, spin
+	dmb     ish                            	// memory barrier after acquiring lock
+2:
+	mov     x13, #8
+	mov     x14, #_cygtls.stackptr			//load stckptr
+	add     x14, x9, x14					//b+off
+	ldr    	x15, [x14]						//save stackptr before adding 8 rax old stck ptr
+	add     x21, x15, x13					//add 8 and store in x21
+	str    	x21, [x14]						//new calulated in old stackptr place x14-stckptr
+	adr     x19, _sigbe        				// new return address
+	mov     x20, x30          				// save original return address
+	mov     x30, x19           				// replace LR with _sigbe
+	str     x20, [x15]         				// store real return address on alt stack
+	mov     x16, #_cygtls.incyg
+	add     x16, x9, x16
+	ldr     w17, [x16]
+	add     w17, w17, #1
+	str     w17, [x16]
+	mov     w7, #0
+	str     w7, [x10]
+	ldr     x21, [sp], #8
+	br      x21
 	.seh_endproc
 
 	.global _sigbe
@@ -386,7 +426,30 @@ _sigfe:						# stack is aligned on entry!
 _sigbe:						# return here after cygwin syscall
 						# stack is aligned on entry!
 	.seh_endprologue
-	ret
+	ldr     x9, [x18, #0x8]
+1:
+	mov     x10, #_cygtls.stacklock
+	add     x10, x9, x10               	// x10 = &cygtls->stacklock
+	ldxr     w11, [x10]                 // Load current lock value
+	cbnz    w11, 1b                    	// If store failed, loop
+	mov 	w8, #1						//swap option possible in arm8.1
+	stxr    w12, w8, [x10]           	// Try to store 1 into lock
+	cbnz    w12, 1b                    	// If store failed, loop
+	dmb ish
+2:
+	mov     x7, #-8                     	// decrement value
+	mov     x13, #_cygtls.stackptr      	// offset of stackptr
+	add     x13, x9, x13                	// x13 = &cygtls->stackptr
+	ldadd   x7, x14, [x13]              	// atomically subtract 8, x14 = old value
+	ldr     x15, [x14, #-8]             	// load return address from (old stackptr - 8)
+	ldr  	x4, =_cygtls.incyg      		// Load offset/address of _cygtls.incyg
+	add 	x4, x9, x4              		// Add TLS base to get address of incyg
+	ldr  	w5, [x4]                		// Load current 32-bit value from incyg
+	sub  	w5, w5, #1              		// Increment value
+	str  	w5, [x4]                		// Store updated value back
+	mov  	w3, #0
+	str  	w3, [x10] 						//release lock
+	br      x15                         	// branch to return address
 	.seh_endproc
 
 	.global	sigdelayed
@@ -427,7 +490,7 @@ stabilize_sig_stack:
 	add	w9, w9, #1			// increment incyg counter
 	str	w9, [x12]			// store incremented value back
 
-	// check if there is a current signal to handle 
+	// check if there is a current signal to handle
 	ldr	x11, =_cygtls.current_sig	// load the symbol address/offset
 	ldr	w9, [x10, x11]			// load current value of current_sig
 	cbz	w9, 3f				// if no current signal, jump to cleanup
