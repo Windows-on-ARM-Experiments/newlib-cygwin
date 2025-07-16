@@ -637,6 +637,8 @@ HAS_NDS32_FPU_SP_FALSE
 HAS_NDS32_FPU_SP_TRUE
 MACH_ADD_SETJMP_FALSE
 MACH_ADD_SETJMP_TRUE
+HAVE_FPMATH_H_AND_NOT_LDBL_EQ_DBL_FALSE
+HAVE_FPMATH_H_AND_NOT_LDBL_EQ_DBL_TRUE
 HAVE_FPMATH_H_FALSE
 HAVE_FPMATH_H_TRUE
 HAVE_LIBC_MACHINE_Z8K_FALSE
@@ -1696,7 +1698,7 @@ Optional Features:
   --enable-silent-rules   less verbose build output (undo: "make V=1")
   --disable-silent-rules  verbose build output (undo: "make V=0")
   --enable-maintainer-mode
-                          enable make rules and dependencies not useful (and
+                          enable make rules and dependencies not useful (and
                           sometimes confusing) to the casual installer
   --enable-dependency-tracking
                           do not reject slow dependency extractors
@@ -6206,6 +6208,13 @@ else
   HAVE_FPMATH_H_FALSE=
 fi
 
+ if test "$HAVE_FPMATH_H" = "yes" && test "$_LDBL_EQ_DBL" != "yes"; then
+  HAVE_FPMATH_H_AND_NOT_LDBL_EQ_DBL_TRUE=
+  HAVE_FPMATH_H_AND_NOT_LDBL_EQ_DBL_FALSE='#'
+else
+  HAVE_FPMATH_H_AND_NOT_LDBL_EQ_DBL_TRUE='#'
+  HAVE_FPMATH_H_AND_NOT_LDBL_EQ_DBL_FALSE=
+fi
 
 
  if test "x$mach_add_setjmp" = "xtrue"; then
@@ -8059,6 +8068,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_FPMATH_H_TRUE}" && test -z "${HAVE_FPMATH_H_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_FPMATH_H\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_FPMATH_H_AND_NOT_LDBL_EQ_DBL_TRUE}" && test -z "${HAVE_FPMATH_H_AND_NOT_LDBL_EQ_DBL_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_FPMATH_H_AND_NOT_LDBL_EQ_DBL\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${MACH_ADD_SETJMP_TRUE}" && test -z "${MACH_ADD_SETJMP_FALSE}"; then

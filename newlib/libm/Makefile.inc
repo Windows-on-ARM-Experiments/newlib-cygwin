@@ -45,9 +45,9 @@ include %D%/math/Makefile.inc
 endif
 include %D%/common/Makefile.inc
 
-if HAVE_FPMATH_H
+if HAVE_FPMATH_H_AND_NOT_LDBL_EQ_DBL
 include %D%/ld/Makefile.inc
-endif # HAVE_FPMATH_H
+endif # HAVE_FPMATH_H_AND_NOT_LDBL_EQ_DBL
 
 include %D%/complex/Makefile.inc
 include %D%/fenv/Makefile.inc
