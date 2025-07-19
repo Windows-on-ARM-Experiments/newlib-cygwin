@@ -51,15 +51,29 @@ import_address (void *imp)
   __try
     {
 #if defined(__aarch64__)
-      // If opcode is an adr instruction.
-      uint32_t opcode = *(uint32_t *) imp;
-      if ((opcode & 0x9f000000) == 0x10000000)
+      // If opcode1 is an adr instruction (https://www.scs.stanford.edu/~zyedidia/arm64/adr.html)
+      uint32_t opcode1 = *((uint32_t *) imp);
+      uint32_t opcode2 = *(((uint32_t *) imp) + 1);
+      if ((opcode1 & 0x9f000000) == 0x10000000)
 	{
-	  uint32_t immhi = (opcode >> 5) & 0x7ffff;
-	  uint32_t immlo = (opcode >> 29) & 0x3;
-	  int64_t sign_extend = (0l - (immhi >> 18)) << 21;
+	  uint32_t immhi = (opcode1 >> 5) & 0x7ffff;
+	  uint32_t immlo = (opcode1 >> 29) & 0x3;
+	  int64_t sign_extend = (0l - (immhi >> 20)) << 21; // sign extend from 21 to 64 bits
 	  int64_t imm = sign_extend | (immhi << 2) | immlo;
-	  uintptr_t jmpto = *(uintptr_t *) ((uint8_t *) imp + imm);
+	  uintptr_t jmpto = *(uintptr_t *) ((int64_t) imp + imm);
+	  return (void *) jmpto;
+	}
+     // If opcode1 is an adrp and opcode2 is ldr instruction (https://www.scs.stanford.edu/~zyedidia/arm64/adrp.html,
+     // https://www.scs.stanford.edu/~zyedidia/arm64/ldr_imm_gen.html).
+     else if (((opcode1 & 0x9f000000) == 0x90000000) && ((opcode2 & 0xbfc00000) == 0xb9400000))
+	{
+	  uint32_t immhi = (opcode1 >> 5) & 0x7ffff;
+	  uint32_t immlo = (opcode1 >> 29) & 0x3;
+	  uint32_t imm12 = ((opcode2 >> 10) & 0xfff) * 8; // 64 bit scale
+	  int64_t sign_extend = (0l - ((int64_t) immhi >> 32)) << 33; // sign extend from 33 to 64 bits
+	  int64_t imm = sign_extend | (((immhi << 2) | immlo) << 12);
+	  int64_t base = (int64_t) imp & ~0xfff;
+	  uintptr_t jmpto = *(uintptr_t *) (base + imm + imm12);
 	  return (void *) jmpto;
 	}
 #else

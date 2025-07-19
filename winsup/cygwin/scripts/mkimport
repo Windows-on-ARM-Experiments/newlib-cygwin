@@ -73,8 +73,8 @@ EOF
 	.extern	$imp_sym
 	.global	$glob_sym
 $glob_sym:
-	adr x16, $imp_sym
-	ldr x16, [x16]
+	adrp x16, $imp_sym
+	ldr x16, [x16, #:lo12:$imp_sym]
 	br x16
 EOF
 	} else {
