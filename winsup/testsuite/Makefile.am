@@ -335,8 +335,11 @@ LDADD = $(builddir)/libltp.a $(builddir)/../cygwin/binmode.o $(LDADD_FOR_TESTDLL
 winsup_api_devdsp_LDADD = -lwinmm $(LDADD)
 
 # all tests
-TESTS = $(check_PROGRAMS) \
-	mingw/cygload
+TESTS = $(check_PROGRAMS)
+
+if CROSS_BOOTSTRAP
+TESTS += mingw/cygload$(EXEEXT)
+endif
 
 # expected fail tests
 XFAIL_TESTS = \
@@ -351,6 +354,7 @@ LOG_COMPILER = $(srcdir)/cygrun.sh
 
 export runtime_root=$(abs_builddir)/testinst/bin
 export mingwtestdir=$(builddir)/mingw
+export utilsdir=$(builddir)/../utils
 
 # Set up things in the Cygwin 'installation' at testsuite/testinst/ to provide
 # things which tests need to work
@@ -369,11 +373,13 @@ export mingwtestdir=$(builddir)/mingw
 # dependencies other than cygwin1.dll.
 #
 
+BUSYBOX := $(shell which busybox)
+
 check-local:
 	$(MKDIR_P) ${builddir}/testinst/tmp
-	cd ${builddir}/testinst/bin && cp /usr/libexec/busybox/bin/busybox.exe sh.exe
-	cd ${builddir}/testinst/bin && cp /usr/libexec/busybox/bin/busybox.exe sleep.exe
-	cd ${builddir}/testinst/bin && cp /usr/libexec/busybox/bin/busybox.exe ls.exe
+	cd ${builddir}/testinst/bin && cp $(BUSYBOX) sh.exe
+	cd ${builddir}/testinst/bin && cp $(BUSYBOX) sleep.exe
+	cd ${builddir}/testinst/bin && cp $(BUSYBOX) ls.exe
 
 # target to build all the programs needed by check, without running check
 check_programs: $(check_PROGRAMS)

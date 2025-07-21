@@ -40,7 +40,9 @@ AM_PROG_AS
 AC_LANG(C)
 AC_LANG(C++)
 
-AC_ARG_WITH([cross-bootstrap],[AS_HELP_STRING([--with-cross-bootstrap],[do not build programs using the MinGW toolchain or check for MinGW libraries (useful for bootstrapping a cross-compiler)])],[],[with_cross_bootstrap=no])
+AC_ARG_WITH([cross_bootstrap],
+    [AS_HELP_STRING([--without-cross-bootstrap],
+		    [do not build programs using the MinGW toolchain or check for MinGW libraries (useful for bootstrapping a cross-compiler)])])
 
 AC_CYGWIN_INCLUDES
 
@@ -115,13 +117,13 @@ if test -z "$XMLTO"; then
     fi
 fi
 
-if test "x$with_cross_bootstrap" != "xyes"; then
-    AC_CHECK_PROGS(MINGW_CXX, ${target_cpu}-w64-mingw32-g++)
+if test "x$with_cross_bootstrap" != "xno"; then
+    AC_CHECK_PROGS(MINGW_CXX, ${build_cpu}-w64-mingw32-g++)
     test -n "$MINGW_CXX" || AC_MSG_ERROR([no acceptable MinGW g++ found in \$PATH])
-    AC_CHECK_PROGS(MINGW_CC, ${target_cpu}-w64-mingw32-gcc)
+    AC_CHECK_PROGS(MINGW_CC, ${build_cpu}-w64-mingw32-gcc)
     test -n "$MINGW_CC" || AC_MSG_ERROR([no acceptable MinGW gcc found in \$PATH])
 fi
-AM_CONDITIONAL(CROSS_BOOTSTRAP, [test "x$with_cross_bootstrap" != "xyes"])
+AM_CONDITIONAL(CROSS_BOOTSTRAP, [test "x$with_cross_bootstrap" != "xno"])
 
 AC_EXEEXT
 
@@ -134,10 +136,12 @@ AM_CONDITIONAL(BUILD_DUMPER, [test "x$build_dumper" = "xyes"])
 
 # libbfd.a doesn't have a pkgconfig file, so we guess what it's dependencies
 # are, based on what's present in the build environment
-BFD_LIBS="-lintl -liconv -liberty -lz"
-AC_CHECK_LIB([sframe], [sframe_decode], [BFD_LIBS="${BFD_LIBS} -lsframe"])
-AC_CHECK_LIB([zstd], [ZSTD_isError], [BFD_LIBS="${BFD_LIBS} -lzstd"])
-AC_SUBST([BFD_LIBS])
+if test "x$with_cross_bootstrap" != "xno"; then
+    BFD_LIBS="-lintl -liconv -liberty -lz"
+    AC_CHECK_LIB([sframe], [sframe_decode], [BFD_LIBS="${BFD_LIBS} -lsframe"])
+    AC_CHECK_LIB([zstd], [ZSTD_isError], [BFD_LIBS="${BFD_LIBS} -lzstd"])
+    AC_SUBST([BFD_LIBS])
+fi
 
 AC_CONFIG_FILES([
     Makefile

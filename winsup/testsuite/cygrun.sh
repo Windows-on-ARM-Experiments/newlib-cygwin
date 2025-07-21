@@ -8,10 +8,10 @@ exe=$1
 
 export PATH="$runtime_root:${PATH}"
 
-if [ "$1" = "./mingw/cygload" ]
+if [ "$1" = "./mingw/cygload.exe" ]
 then
-    windows_runtime_root=$(cygpath -m $runtime_root)
-    $mingwtestdir/cygrun "$exe -v -cygwin $windows_runtime_root/cygwin1.dll"
+    windows_runtime_root=$($utilsdir/cygpath.exe -m $runtime_root)
+    $mingwtestdir/cygrun.exe "$exe -v -cygwin $windows_runtime_root/cygwin1.dll"
 else
-    cygdrop $mingwtestdir/cygrun $exe
+    cygdrop.exe $mingwtestdir/cygrun.exe $exe
 fi
