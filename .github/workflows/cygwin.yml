@@ -378,8 +378,9 @@ jobs:
         fi
         export MAKEFLAGS=-j$(nproc)
         cd build
-        (export PATH=${{ matrix.target }}/winsup/testsuite/testinst/bin:${PATH} && cmd /c $(cygpath -wa ${{ matrix.target }}/winsup/cygserver/cygserver) &)
-        (cd ${{ matrix.target }}/winsup; make check AM_COLOR_TESTS=always)
+        (export PATH="$(pwd)/${{ matrix.target }}/winsup/testsuite/testinst/bin:${PATH}" &&
+          cmd /c start "" "$(cygpath -wa $(pwd)/${{ matrix.target }}/winsup/cygserver/cygserver)" &)
+        (cd ${{ matrix.target }}/winsup && make check AM_COLOR_TESTS=always)
       continue-on-error: ${{ matrix.pkgarch == 'aarch64' }}
 
     # kill hanging processes
