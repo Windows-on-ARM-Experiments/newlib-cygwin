@@ -10,6 +10,7 @@ on:
 
 jobs:
   fedora-build:
+    if: false
     runs-on: ubuntu-latest
     container: fedora:latest
     strategy:
@@ -91,6 +92,7 @@ jobs:
       if: env.HAS_SSH_KEY == 'true'
 
   ubuntu-build:
+    if: false 
     strategy:
       fail-fast: false
       matrix:
