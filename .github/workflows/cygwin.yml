@@ -380,8 +380,8 @@ jobs:
         fi
         export MAKEFLAGS=-j$(nproc)
         cd build
-        (export PATH="$(pwd)/${{ matrix.target }}/winsup/testsuite/testinst/bin:${PATH}" &&
-          cmd /c start "" "$(cygpath -wa $(pwd)/${{ matrix.target }}/winsup/cygserver/cygserver)" &)
+        (export PATH="/cygdrive/c/a/newlib-cygwin/newlib-cygwin/build/aarch64-pc-cygwin/winsup/testsuite/testinst/bin:${PATH}" &&
+          cmd /c "$(cygpath -wa $(pwd)/${{ matrix.target }}/winsup/cygserver/cygserver)" &)
         (cd ${{ matrix.target }}/winsup && make check AM_COLOR_TESTS=always)
       continue-on-error: ${{ matrix.pkgarch == 'aarch64' }}
 
