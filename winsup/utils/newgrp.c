@@ -25,12 +25,6 @@ details. */
 
 #define PATH_PREFIX	"PATH=/usr/bin:"
 
-/* Workaround for large relocation issue in binutils. */
-#if defined(__aarch64__)
-__attribute__((dllimport))
-extern char **environ;
-#endif
-
 char *
 create_env_var (const char *name, const char *val)
 {
