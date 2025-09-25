@@ -6,12 +6,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-/* Workaround for large relocation issue in binutils. */
-#if defined(__aarch64__)
-__attribute__((dllimport))	
-extern char **environ;
-#endif
-
 static char tmppath[] = "pspawn.XXXXXX";
 static const char exit0[] = "exit 0\n";
 
